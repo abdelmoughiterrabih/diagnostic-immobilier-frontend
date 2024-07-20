@@ -1,0 +1,75 @@
+/* General container for centering the login card */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  padding: 20px;
+}
+
+/* Wrapper for the login card and image */
+.login-card-wrapper {
+  display: flex;
+  width: 900px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Style for the login form section */
+.login-card {
+  flex: 1;
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Centering and styling the avatar */
+.login-avatar-container {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-avatar {
+  background-color: #52c41a !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Container for the image */
+.login-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f2f5;
+}
+
+/* Styling the image */
+.login-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Style for the primary button */
+.ant-btn-primary {
+  background-color: #52c41a !important;
+  border-color: #52c41a !important;
+  box-shadow: 0 2px 6px rgba(82, 196, 26, 0.3);
+  transition: all 0.3s ease;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: #389e0d !important;
+  border-color: #389e0d !important;
+  box-shadow: 0 4px 12px rgba(56, 158, 13, 0.3);
+}
+
+/* Additional spacing for form items */
+.ant-form-item {
+  margin-bottom: 24px;
+}
