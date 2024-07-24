@@ -47,10 +47,26 @@ const AppComponent = () => {
               label: 'DashBoard',
             },
             {
+              key: '/Dossier',
+              icon: <UploadOutlined />,
+              label: ' Gestion des dossiers',
+            },
+            {
+              key: '/Rapport',
+              icon: <UploadOutlined />,
+              label: ' Gestion des Rapports ',
+            },
+            {
               key: '/facture',
               icon: <UploadOutlined />,
-              label: 'Facture',
+              label: ' Gestion des Factures',
             },
+            {
+              key: '/utilisateur',
+              icon: <UploadOutlined />,
+              label: ' Gestion des utilisateurs',
+            },
+           
           ]}
         />
       </Sider>
