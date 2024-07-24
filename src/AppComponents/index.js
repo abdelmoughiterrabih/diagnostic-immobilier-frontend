@@ -42,19 +42,14 @@ const AppComponent = () => {
           selectedKeys={[selectedKeys]}
           items={[
             {
-              key: '/test1',
+              key: '/dashboard',
               icon: <UserOutlined />,
-              label: 'test 1',
+              label: 'DashBoard',
             },
             {
-              key: '/test2',
-              icon: <VideoCameraOutlined />,
-              label: 'test 2',
-            },
-            {
-              key: '3',
+              key: '/facture',
               icon: <UploadOutlined />,
-              label: 'nav 3',
+              label: 'Facture',
             },
           ]}
         />

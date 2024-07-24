@@ -1,7 +1,8 @@
 import { BrowserRouter,Route,Routes, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import Test1 from "../components/test1";
-import Test2 from "../components/test2";
+import Facture from "../components/facture";
+import DashBoard from "../components/DashBoard";
+
 
 
 function AppRoutes(){
@@ -9,8 +10,9 @@ function AppRoutes(){
     return(
     <AnimatePresence>
      <Routes>
-        <Route path='/test1' element={<Test1/>}/>
-        <Route path='/test2' element={<Test2/>}/>
+        
+        <Route path='/facture' element={<Facture/>}/>
+        <Route path='/dashboard' element={<DashBoard/>}/>
      </Routes>
      
      </AnimatePresence>

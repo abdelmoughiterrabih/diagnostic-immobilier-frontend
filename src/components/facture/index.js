@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar } from 'antd';
-const Test2 = () => {
+const Facture = () => {
   const onPanelChange = (value, mode) => {
     console.log(value.format('YYYY-MM-DD'), mode);
   };
@@ -8,4 +8,4 @@ const Test2 = () => {
   <h1>tttt</h1>
 );
 };
-export default Test2;
+export default Facture;
