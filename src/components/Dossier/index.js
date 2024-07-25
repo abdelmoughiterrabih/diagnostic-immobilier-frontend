@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 
-const { TextArea } = Input;
 const { Option } = Select;
 
 const Dossier = () => {
@@ -43,6 +42,11 @@ const Dossier = () => {
     message.success('Dossier supprimé avec succès');
   };
 
+  const handleSend = (record) => {
+    // Ajoutez ici la logique pour envoyer le dossier
+    message.success(`Dossier ${record.dossier_number} envoyé avec succès`);
+  };
+
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
@@ -77,6 +81,9 @@ const Dossier = () => {
           <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
+          <Button icon={<PlusOutlined />} onClick={() => handleSend(record)}>
+            Envoyer
+          </Button>
         </Space>
       ),
     },

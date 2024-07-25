@@ -16,7 +16,7 @@ const Rapport = () => {
       <Row justify="center" style={{ width: '100%', padding: '30px' }}>
         <Col xs={24} sm={20} md={16} lg={12} xl={10}>
           <Card
-            title={<span style={{ color: '#00A5CF' }}>Rapport de Diagnostic</span>}
+            title={<span style={{ color: '#00A5CF' }}>Rapport de D'expertise</span>}
             bordered={false}
             style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#fff' }}
           >
