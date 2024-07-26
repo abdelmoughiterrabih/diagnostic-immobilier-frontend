@@ -74,6 +74,11 @@ const AppComponent = () => {
               icon: <UploadOutlined />,
               label: 'Gestion des utilisateurs',
             },
+            {
+              key: '/client',
+              icon: <UploadOutlined />,
+              label: 'Gestion des clients',
+            },
           ]}
           style={{ backgroundColor: '#00A5CF' }} // Changer la couleur de fond du Menu
         />

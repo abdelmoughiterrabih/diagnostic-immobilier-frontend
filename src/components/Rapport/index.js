@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Form, Input, DatePicker, InputNumber, Select, Button, Space, Row, Col, Card } from 'antd';
+import { Form, Input, DatePicker, Select, Button, Space, Row, Col, Card } from 'antd';
+import './index.css';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -12,13 +13,13 @@ const Rapport = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <div className="container">
       <Row justify="center" style={{ width: '100%', padding: '30px' }}>
         <Col xs={24} sm={20} md={16} lg={12} xl={10}>
           <Card
-            title={<span style={{ color: '#00A5CF' }}>Rapport de D'expertise</span>}
+            title={<span className="card-title">Rapport de D'expertise</span>}
             bordered={false}
-            style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#fff' }}
+            className="card"
           >
             <Form form={form} name="property_form" onFinish={onFinish} autoComplete="off" layout="vertical">
               <Form.Item
@@ -40,9 +41,12 @@ const Rapport = () => {
               <Form.Item
                 label="Estimation du prix"
                 name="price_estimate"
-                rules={[{ required: true, message: 'Veuillez entrer l\'estimation du prix!' }]}
+                rules={[
+                  { required: true, message: 'Veuillez entrer l\'estimation du prix!' },
+                  { pattern: /^\d+(\.\d{1,2})?$/, message: 'Veuillez entrer un montant valide!' },
+                ]}
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <Input style={{ width: '100%' }} />
               </Form.Item>
 
               <Form.Item
@@ -79,7 +83,7 @@ const Rapport = () => {
                   <Button 
                     type="primary" 
                     htmlType="submit" 
-                    style={{ backgroundColor: '#00A5CF', borderColor: '#00A5CF', color: '#fff' }}
+                    className="button-primary"
                   >
                     Envoyer
                   </Button>

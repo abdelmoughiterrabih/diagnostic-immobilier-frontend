@@ -7,6 +7,21 @@ const { Option } = Select;
 const Dossier = () => {
   const [form] = Form.useForm();
   const [dossiers, setDossiers] = useState([]);
+  const [clients, setClients] = useState([
+    { key: 1, name: 'Client 1' },
+    { key: 2, name: 'Client 2' },
+    { key: 3, name: 'Client 3' },
+    { key: 4, name: 'Client 4' },
+    { key: 5, name: 'Client 5' },
+    { key: 6, name: 'Client 6' },
+    { key: 7, name: 'Client 7' },
+    { key: 8, name: 'Client 8' },
+    { key: 9, name: 'Client 9' },
+    { key: 10, name: 'Client 10' },
+    { key: 11, name: 'Client 11' },
+    { key: 12, name: 'Client 12' },
+    // Ajoutez autant de clients que nécessaire
+  ]);
   const [editingDossier, setEditingDossier] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -42,11 +57,6 @@ const Dossier = () => {
     message.success('Dossier supprimé avec succès');
   };
 
-  const handleSend = (record) => {
-    // Ajoutez ici la logique pour envoyer le dossier
-    message.success(`Dossier ${record.dossier_number} envoyé avec succès`);
-  };
-
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
@@ -74,6 +84,11 @@ const Dossier = () => {
       key: 'service_type',
     },
     {
+      title: 'Client',
+      dataIndex: 'client',
+      key: 'client',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (text, record) => (
@@ -81,9 +96,6 @@ const Dossier = () => {
           <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-          <Button icon={<PlusOutlined />} onClick={() => handleSend(record)}>
-            Envoyer
-          </Button>
         </Space>
       ),
     },
@@ -97,6 +109,7 @@ const Dossier = () => {
           <p>Nom: {record.dossier_name}</p>
           <p>Date de dépôt: {record.dossier_date.format('DD/MM/YYYY')}</p>
           <p>Type de service: {record.service_type}</p>
+          <p>Client: {record.client}</p>
         </div>
       ),
       onOk() {},
@@ -168,13 +181,19 @@ const Dossier = () => {
           <Form.Item
             label="Type de service"
             name="service_type"
-            rules={[{ required: true, message: 'Veuillez sélectionner le type de service!' }]}
+            rules={[{ required: true, message: 'Veuillez entrer le type de service!' }]}
           >
-            <Select style={{ width: '100%' }}>
-              <Option value="service1">Service 1</Option>
-              <Option value="service2">Service 2</Option>
-              <Option value="service3">Service 3</Option>
-              <Option value="service4">Service 4</Option>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Client"
+            name="client"
+            rules={[{ required: true, message: 'Veuillez sélectionner un client!' }]}
+          >
+            <Select placeholder="Sélectionner un client">
+              {clients.map(client => (
+                <Option key={client.key} value={client.name}>{client.name}</Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item>

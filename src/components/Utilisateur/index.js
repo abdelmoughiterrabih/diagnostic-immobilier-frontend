@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Space, Table, Modal, message } from 'antd';
+import { Form, Input, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+
+const { Option } = Select;
 
 const Utilisateur = () => {
   const [form] = Form.useForm();
@@ -56,6 +58,11 @@ const Utilisateur = () => {
       key: 'email',
     },
     {
+      title: 'Rôle',
+      dataIndex: 'role',
+      key: 'role',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (text, record) => (
@@ -74,6 +81,7 @@ const Utilisateur = () => {
       content: (
         <div>
           <p>Adresse Email: {record.email}</p>
+          <p>Rôle: {record.role}</p>
         </div>
       ),
       onOk() {},
@@ -87,7 +95,9 @@ const Utilisateur = () => {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchText.toLowerCase())
+    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -141,6 +151,17 @@ const Utilisateur = () => {
             rules={[{ required: true, message: 'Veuillez entrer le mot de passe!' }]}
           >
             <Input.Password />
+          </Form.Item>
+          <Form.Item
+            label="Rôle"
+            name="role"
+            rules={[{ required: true, message: 'Veuillez sélectionner le rôle!' }]}
+          >
+            <Select placeholder="Sélectionner un rôle">
+              <Option value="admin">Gestionnaire</Option>
+              <Option value="user">Expert</Option>
+              <Option value="guest">Coordinatrice</Option>
+            </Select>
           </Form.Item>
           <Form.Item>
             <Space>

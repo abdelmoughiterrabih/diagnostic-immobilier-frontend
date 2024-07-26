@@ -42,11 +42,6 @@ const Facture = () => {
     message.success('Facture supprimée avec succès');
   };
 
-  const handleSend = (record) => {
-    // Ajoutez ici la logique pour envoyer la facture
-    message.success(`Facture ${record.invoice_number} envoyée avec succès`);
-  };
-
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
@@ -82,9 +77,6 @@ const Facture = () => {
           <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-          <Button icon={<PlusOutlined />} onClick={() => handleSend(record)}>
-            Envoyer
-          </Button>
         </Space>
       ),
     },

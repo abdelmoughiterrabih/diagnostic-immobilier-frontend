@@ -1,0 +1,32 @@
+/* index.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+  }
+  
+  .container {
+    background-color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: #fff;
+  }
+  
+  .card-title {
+    color: #00A5CF;
+  }
+  
+  .button-primary {
+    background-color: #00A5CF;
+    border-color: #00A5CF;
+    color: #fff;
+  }
+  
