@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Space, Table, Modal, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -10,19 +10,41 @@ const Client = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
 
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get('http://localhost:8088/api/clients/getall');
+      const clientsWithKeys = response.data.map((client) => ({
+        ...client,
+        key: client.id,
+      }));
+      setClients(clientsWithKeys);
+    } catch (error) {
+      message.error('Erreur lors de la récupération des clients');
+    }
+  };
+
   const handleAddEditClient = async (values) => {
     if (editingClient) {
-      const updatedClients = clients.map((client) =>
-        client.key === editingClient.key ? { ...values, key: editingClient.key } : client
-      );
-      setClients(updatedClients);
-      message.success('Client mis à jour avec succès');
+      try {
+        await axios.put(`http://localhost:8088/api/clients/${editingClient.id}`, values);
+        const updatedClients = clients.map((client) =>
+          client.id === editingClient.id ? { ...values, key: editingClient.key } : client
+        );
+        setClients(updatedClients);
+        message.success('Client mis à jour avec succès');
+      } catch (error) {
+        message.error('Erreur lors de la mise à jour du client');
+      }
     } else {
       try {
         const response = await axios.post('http://localhost:8088/api/clients/create', values);
         const newClient = {
           ...response.data,
-          key: Date.now(),
+          key: response.data.id,
         };
         setClients([...clients, newClient]);
         message.success('Client ajouté avec succès');
@@ -41,9 +63,14 @@ const Client = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key) => {
-    setClients(clients.filter((client) => client.key !== key));
-    message.success('Client supprimé avec succès');
+  const handleDelete = async (key) => {
+    try {
+      await axios.delete(`http://localhost:8088/api/clients/${key}`);
+      setClients(clients.filter((client) => client.key !== key));
+      message.success('Client supprimé avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la suppression du client');
+    }
   };
 
   const handleSearch = (e) => {
