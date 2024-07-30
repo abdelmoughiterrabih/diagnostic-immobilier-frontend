@@ -1,45 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const { Option } = Select;
 
 const Dossier = () => {
   const [form] = Form.useForm();
   const [dossiers, setDossiers] = useState([]);
-  const [clients, setClients] = useState([
-    { key: 1, name: 'Client 1' },
-    { key: 2, name: 'Client 2' },
-    { key: 3, name: 'Client 3' },
-    { key: 4, name: 'Client 4' },
-    { key: 5, name: 'Client 5' },
-    { key: 6, name: 'Client 6' },
-    { key: 7, name: 'Client 7' },
-    { key: 8, name: 'Client 8' },
-    { key: 9, name: 'Client 9' },
-    { key: 10, name: 'Client 10' },
-    { key: 11, name: 'Client 11' },
-    { key: 12, name: 'Client 12' },
-    // Ajoutez autant de clients que nécessaire
-  ]);
+  const [clients, setClients] = useState([]);
   const [editingDossier, setEditingDossier] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  useEffect(() => {
+    // Fetch clients
+    axios.get('http://localhost:8088/api/clients/getall')
+      .then(response => setClients(response.data))
+      .catch(error => console.error('Error fetching clients:', error));
+  }, []);
 
   const handleAddEditDossier = (values) => {
+    const dossierData = {
+      ...values,
+      client: selectedClient,
+    };
+
     if (editingDossier) {
+      // Update dossier logic
       const updatedDossiers = dossiers.map((dossier) =>
-        dossier.key === editingDossier.key ? { ...values, key: editingDossier.key } : dossier
+        dossier.key === editingDossier.key ? { ...dossierData, key: editingDossier.key } : dossier
       );
       setDossiers(updatedDossiers);
       message.success('Dossier mis à jour avec succès');
     } else {
-      const newDossier = {
-        ...values,
-        key: Date.now(),
-      };
-      setDossiers([...dossiers, newDossier]);
-      message.success('Dossier ajouté avec succès');
+      // Add dossier logic
+      axios.post('http://localhost:8088/api/dossiers/create', dossierData)
+        .then(response => {
+          const newDossier = {
+            ...response.data,
+            key: response.data.id,
+          };
+          setDossiers([...dossiers, newDossier]);
+          message.success('Dossier ajouté avec succès');
+        })
+        .catch(error => console.error('Error adding dossier:', error));
     }
     form.resetFields();
     setEditingDossier(null);
@@ -49,6 +55,7 @@ const Dossier = () => {
   const handleEdit = (record) => {
     setEditingDossier(record);
     form.setFieldsValue(record);
+    setSelectedClient(record.client);
     setIsModalVisible(true);
   };
 
@@ -61,31 +68,36 @@ const Dossier = () => {
     setSearchText(e.target.value);
   };
 
+  const handleClientSelect = (cin) => {
+    const client = clients.find(client => client.cin === cin);
+    setSelectedClient(client);
+  };
+
   const columns = [
     {
       title: 'Numéro de dossier',
-      dataIndex: 'dossier_number',
-      key: 'dossier_number',
+      dataIndex: 'numero_dossier',
+      key: 'numero_dossier',
     },
     {
       title: 'Nom de dossier',
-      dataIndex: 'dossier_name',
-      key: 'dossier_name',
+      dataIndex: 'nom',
+      key: 'nom',
     },
     {
       title: 'Date de dépôt',
-      dataIndex: 'dossier_date',
-      key: 'dossier_date',
-      render: (text) => text.format('DD/MM/YYYY'),
+      dataIndex: 'date_depo',
+      key: 'date_depo',
+      render: (text) => new Date(text).toLocaleDateString(),
     },
     {
       title: 'Type de service',
-      dataIndex: 'service_type',
-      key: 'service_type',
+      dataIndex: 'type_service',
+      key: 'type_service',
     },
     {
       title: 'Client',
-      dataIndex: 'client',
+      dataIndex: ['client', 'cin'],
       key: 'client',
     },
     {
@@ -103,13 +115,13 @@ const Dossier = () => {
 
   const handleView = (record) => {
     Modal.info({
-      title: `Dossier: ${record.dossier_number}`,
+      title: `Dossier: ${record.numero_dossier}`,
       content: (
         <div>
-          <p>Nom: {record.dossier_name}</p>
-          <p>Date de dépôt: {record.dossier_date.format('DD/MM/YYYY')}</p>
-          <p>Type de service: {record.service_type}</p>
-          <p>Client: {record.client}</p>
+          <p>Nom: {record.nom}</p>
+          <p>Date de dépôt: {new Date(record.date_depo).toLocaleDateString()}</p>
+          <p>Type de service: {record.type_service}</p>
+          <p>Client: {record.client.nom} {record.client.prenom} (CIN: {record.client.cin})</p>
         </div>
       ),
       onOk() {},
@@ -123,7 +135,7 @@ const Dossier = () => {
   };
 
   const filteredDossiers = dossiers.filter((dossier) =>
-    dossier.dossier_number.toLowerCase().includes(searchText.toLowerCase())
+    dossier.numero_dossier.toString().toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -159,40 +171,48 @@ const Dossier = () => {
         >
           <Form.Item
             label="Numéro de dossier"
-            name="dossier_number"
+            name="numero_dossier"
             rules={[{ required: true, message: 'Veuillez entrer le numéro de dossier!' }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Nom de dossier"
-            name="dossier_name"
+            name="nom"
             rules={[{ required: true, message: 'Veuillez entrer le nom de dossier!' }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Date de dépôt"
-            name="dossier_date"
+            name="date_depo"
             rules={[{ required: true, message: 'Veuillez entrer la date de dépôt!' }]}
           >
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             label="Type de service"
-            name="service_type"
+            name="type_service"
             rules={[{ required: true, message: 'Veuillez entrer le type de service!' }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Client"
-            name="client"
+            label="Client (par CIN)"
+            name="client_cin"
             rules={[{ required: true, message: 'Veuillez sélectionner un client!' }]}
           >
-            <Select placeholder="Sélectionner un client">
+            <Select
+              showSearch
+              placeholder="Sélectionner un client"
+              optionFilterProp="children"
+              onSelect={handleClientSelect}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+            >
               {clients.map(client => (
-                <Option key={client.key} value={client.name}>{client.name}</Option>
+                <Option key={client.cin} value={client.cin}>{client.cin}</Option>
               ))}
             </Select>
           </Form.Item>
