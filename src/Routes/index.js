@@ -20,6 +20,7 @@ function AppRoutes(){
         <Route path='/utilisateur' element={<Utilisateur/>}/>
         <Route path='/rapport' element={<Rapport/>}/>
         <Route path='/client' element={<Client/>}/>
+        
      </Routes>
      
      </AnimatePresence>

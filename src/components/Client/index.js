@@ -64,13 +64,21 @@ const Client = () => {
   };
 
   const handleDelete = async (key) => {
-    try {
-      await axios.delete(`http://localhost:8088/api/clients/${key}`);
-      setClients(clients.filter((client) => client.key !== key));
-      message.success('Client supprimé avec succès');
-    } catch (error) {
-      message.error('Erreur lors de la suppression du client');
-    }
+    Modal.confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer ce client?',
+      okText: 'Oui',
+      okType: 'danger',
+      cancelText: 'Non',
+      onOk: async () => {
+        try {
+          await axios.delete(`http://localhost:8088/api/clients/${key}`);
+          setClients(clients.filter((client) => client.key !== key));
+          message.success('Client supprimé avec succès');
+        } catch (error) {
+          message.error('Erreur lors de la suppression du client');
+        }
+      },
+    });
   };
 
   const handleSearch = (e) => {
