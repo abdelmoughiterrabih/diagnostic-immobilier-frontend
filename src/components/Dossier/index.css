@@ -1,0 +1,31 @@
+.App {
+    height: 100vh; /* Assurez-vous que le conteneur principal prend toute la hauteur de la fenêtre */
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f2f5; /* Couleur de fond plus agréable */
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+    color: #1890ff; /* Couleur du texte en bleu */
+  }
+  
+  .ant-card {
+    flex: 1;
+  }
+  
+  .ant-table-wrapper {
+    height: 100%;
+  }
+  
+  .ant-table {
+    height: 100%;
+  }
+  
+  .ant-table-body {
+    height: calc(100% - 55px); /* Ajustez en fonction de la hauteur de l'en-tête */
+    overflow-y: auto;
+  }
+  
