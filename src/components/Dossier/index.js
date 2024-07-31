@@ -19,6 +19,17 @@ const Dossier = () => {
     axios.get('http://localhost:8088/api/clients/getall')
       .then(response => setClients(response.data))
       .catch(error => console.error('Error fetching clients:', error));
+
+    // Fetch dossiers
+    axios.get('http://localhost:8088/api/dossiers/getall')
+      .then(response => {
+        const dossiersWithKey = response.data.map(dossier => ({
+          ...dossier,
+          key: dossier.id, // Ajouter une clé unique pour chaque dossier
+        }));
+        setDossiers(dossiersWithKey);
+      })
+      .catch(error => console.error('Error fetching dossiers:', error));
   }, []);
 
   const handleAddEditDossier = (values) => {
@@ -29,11 +40,15 @@ const Dossier = () => {
 
     if (editingDossier) {
       // Update dossier logic
-      const updatedDossiers = dossiers.map((dossier) =>
-        dossier.key === editingDossier.key ? { ...dossierData, key: editingDossier.key } : dossier
-      );
-      setDossiers(updatedDossiers);
-      message.success('Dossier mis à jour avec succès');
+      axios.put(`http://localhost:8088/api/dossiers/update/${editingDossier.key}`, dossierData)
+        .then(() => {
+          const updatedDossiers = dossiers.map((dossier) =>
+            dossier.key === editingDossier.key ? { ...dossierData, key: editingDossier.key } : dossier
+          );
+          setDossiers(updatedDossiers);
+          message.success('Dossier mis à jour avec succès');
+        })
+        .catch(error => console.error('Error updating dossier:', error));
     } else {
       // Add dossier logic
       axios.post('http://localhost:8088/api/dossiers/create', dossierData)
@@ -60,8 +75,12 @@ const Dossier = () => {
   };
 
   const handleDelete = (key) => {
-    setDossiers(dossiers.filter((dossier) => dossier.key !== key));
-    message.success('Dossier supprimé avec succès');
+    axios.delete(`http://localhost:8088/api/dossiers/delete/${key}`)
+      .then(() => {
+        setDossiers(dossiers.filter((dossier) => dossier.key !== key));
+        message.success('Dossier supprimé avec succès');
+      })
+      .catch(error => console.error('Error deleting dossier:', error));
   };
 
   const handleSearch = (e) => {
@@ -72,6 +91,31 @@ const Dossier = () => {
     const client = clients.find(client => client.cin === cin);
     setSelectedClient(client);
   };
+
+  const handleView = (record) => {
+    Modal.info({
+      title: `Dossier: ${record.numero_dossier}`,
+      content: (
+        <div>
+          <p>Nom: {record.nom}</p>
+          <p>Date de dépôt: {new Date(record.date_depo).toLocaleDateString()}</p>
+          <p>Type de service: {record.type_service}</p>
+          <p>Client: {record.client.nom} {record.client.prenom} (CIN: {record.client.cin})</p>
+        </div>
+      ),
+      onOk() {},
+    });
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setEditingDossier(null);
+    setIsModalVisible(false);
+  };
+
+  const filteredDossiers = dossiers.filter((dossier) =>
+    dossier.numero_dossier.toString().toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const columns = [
     {
@@ -112,31 +156,6 @@ const Dossier = () => {
       ),
     },
   ];
-
-  const handleView = (record) => {
-    Modal.info({
-      title: `Dossier: ${record.numero_dossier}`,
-      content: (
-        <div>
-          <p>Nom: {record.nom}</p>
-          <p>Date de dépôt: {new Date(record.date_depo).toLocaleDateString()}</p>
-          <p>Type de service: {record.type_service}</p>
-          <p>Client: {record.client.nom} {record.client.prenom} (CIN: {record.client.cin})</p>
-        </div>
-      ),
-      onOk() {},
-    });
-  };
-
-  const handleCancel = () => {
-    form.resetFields();
-    setEditingDossier(null);
-    setIsModalVisible(false);
-  };
-
-  const filteredDossiers = dossiers.filter((dossier) =>
-    dossier.numero_dossier.toString().toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
     <div style={{ padding: 24 }}>
