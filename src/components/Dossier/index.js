@@ -1,4 +1,3 @@
-// Dossier.js
 import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
@@ -7,6 +6,7 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
+const { confirm } = Modal;
 
 const Dossier = () => {
   const [form] = Form.useForm();
@@ -80,13 +80,25 @@ const Dossier = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key) => {
-    axios.delete(`http://localhost:8088/api/dossiers/${key}`)
-      .then(() => {
-        setDossiers(dossiers.filter((dossier) => dossier.key !== key));
-        message.success('Dossier supprimé avec succès');
-      })
-      .catch(error => console.error('Error deleting dossier:', error));
+  const showDeleteConfirm = (key) => {
+    confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer ce dossier?',
+      content: 'Cette action est irréversible',
+      okText: 'Oui',
+      okType: 'danger',
+      cancelText: 'Non',
+      onOk() {
+        axios.delete(`http://localhost:8088/api/dossiers/${key}`)
+          .then(() => {
+            setDossiers(dossiers.filter((dossier) => dossier.key !== key));
+            message.success('Dossier supprimé avec succès');
+          })
+          .catch(error => console.error('Error deleting dossier:', error));
+      },
+      onCancel() {
+        console.log('Annulé');
+      },
+    });
   };
 
   const handleSearch = (e) => {
@@ -146,7 +158,7 @@ const Dossier = () => {
         <Space>
           <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
+          <Button icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.key)} />
         </Space>
       ),
     },
