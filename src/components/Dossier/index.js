@@ -1,7 +1,10 @@
+// Dossier.js
 import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import moment from 'moment';
+import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 
@@ -13,6 +16,7 @@ const Dossier = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch clients
@@ -25,7 +29,7 @@ const Dossier = () => {
       .then(response => {
         const dossiersWithKey = response.data.map(dossier => ({
           ...dossier,
-          key: dossier.id, // Ajouter une clé unique pour chaque dossier
+          key: dossier.id,
         }));
         setDossiers(dossiersWithKey);
       })
@@ -35,12 +39,12 @@ const Dossier = () => {
   const handleAddEditDossier = (values) => {
     const dossierData = {
       ...values,
+      date_depo: values.date_depo.format('YYYY-MM-DD'),
       client: selectedClient,
     };
 
     if (editingDossier) {
-      // Update dossier logic
-      axios.put(`http://localhost:8088/api/dossiers/update/${editingDossier.key}`, dossierData)
+      axios.put(`http://localhost:8088/api/dossiers/${editingDossier.key}`, dossierData)
         .then(() => {
           const updatedDossiers = dossiers.map((dossier) =>
             dossier.key === editingDossier.key ? { ...dossierData, key: editingDossier.key } : dossier
@@ -50,7 +54,6 @@ const Dossier = () => {
         })
         .catch(error => console.error('Error updating dossier:', error));
     } else {
-      // Add dossier logic
       axios.post('http://localhost:8088/api/dossiers/create', dossierData)
         .then(response => {
           const newDossier = {
@@ -69,13 +72,16 @@ const Dossier = () => {
 
   const handleEdit = (record) => {
     setEditingDossier(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      date_depo: moment(record.date_depo),
+    });
     setSelectedClient(record.client);
     setIsModalVisible(true);
   };
 
   const handleDelete = (key) => {
-    axios.delete(`http://localhost:8088/api/dossiers/delete/${key}`)
+    axios.delete(`http://localhost:8088/api/dossiers/${key}`)
       .then(() => {
         setDossiers(dossiers.filter((dossier) => dossier.key !== key));
         message.success('Dossier supprimé avec succès');
@@ -93,18 +99,7 @@ const Dossier = () => {
   };
 
   const handleView = (record) => {
-    Modal.info({
-      title: `Dossier: ${record.numero_dossier}`,
-      content: (
-        <div>
-          <p>Nom: {record.nom}</p>
-          <p>Date de dépôt: {new Date(record.date_depo).toLocaleDateString()}</p>
-          <p>Type de service: {record.type_service}</p>
-          <p>Client: {record.client.nom} {record.client.prenom} (CIN: {record.client.cin})</p>
-        </div>
-      ),
-      onOk() {},
-    });
+    navigate('/dossier/voir', { state: { dossier: record } });
   };
 
   const handleCancel = () => {
