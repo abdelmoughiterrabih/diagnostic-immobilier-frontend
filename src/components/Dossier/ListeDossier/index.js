@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button, Space, Table } from 'antd';
-import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input, Table } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const ListeDossiers = () => {
   const [dossiers, setDossiers] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Récupérer les dossiers
@@ -24,10 +22,6 @@ const ListeDossiers = () => {
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
-  };
-
-  const handleView = (record) => {
-    navigate('/dossier/voir', { state: { dossier: record } });
   };
 
   const dossiersFiltres = dossiers.filter((dossier) =>
@@ -61,15 +55,7 @@ const ListeDossiers = () => {
       dataIndex: ['client', 'cin'],
       key: 'client',
     },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (text, record) => (
-        <Space>
-          <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
-        </Space>
-      ),
-    },
+    // Suppression de la colonne 'Actions'
   ];
 
   const styles = {
