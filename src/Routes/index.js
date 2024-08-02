@@ -7,6 +7,7 @@ import Rapport from "../components/Rapport";
 import Facture from "../components/Facture";
 import Client from "../components/Client";
 import VoirDossier from "../components/Dossier/VoirDossier";
+import ListeDossier from "../components/Dossier/ListeDossier";
 
 function AppRoutes(){
     const localtion= useLocation();
@@ -22,6 +23,7 @@ function AppRoutes(){
         <Route path='/rapport' element={<Rapport/>}/>
         <Route path='/client' element={<Client/>}/>
         <Route path='/dossier/voir' element={<VoirDossier/>}/>
+        <Route path='/dossier/ListeDossier' element={<ListeDossier/>}/>
      </Routes>
      
      </AnimatePresence>
