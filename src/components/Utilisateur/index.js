@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const { Option } = Select;
 
@@ -11,24 +12,68 @@ const Utilisateur = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  const handleAddEditUser = (values) => {
-    if (editingUser) {
-      const updatedUsers = users.map((user) =>
-        user.key === editingUser.key ? { ...values, key: editingUser.key } : user
-      );
-      setUsers(updatedUsers);
-      message.success('Utilisateur mis à jour avec succès');
-    } else {
-      const newUser = {
-        ...values,
-        key: Date.now(),
-      };
-      setUsers([...users, newUser]);
-      message.success('Utilisateur ajouté avec succès');
+  // Fetch user data from the API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:8088/api/utilisateurs/getall');
+        const fetchedUsers = response.data.map(user => ({
+          key: user.id,
+          name: user.nom_utilisateur,
+          email: user.address_email,
+          role: user.role,
+        }));
+        setUsers(fetchedUsers);
+      } catch (error) {
+        console.error('There was an error fetching the users!', error);
+        message.error('Erreur lors de la récupération des utilisateurs');
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
+  const handleAddEditUser = async (values) => {
+    try {
+      if (editingUser) {
+        // Send a PUT request to update the user
+        await axios.put(`http://localhost:8088/api/utilisateurs/${editingUser.key}`, {
+          nom_utilisateur: values.name,
+          address_email: values.email,
+          mot_passe: values.password,
+          role: values.role,
+        });
+
+        // Update user locally
+        const updatedUsers = users.map((user) =>
+          user.key === editingUser.key ? { ...values, key: editingUser.key } : user
+        );
+        setUsers(updatedUsers);
+        message.success('Utilisateur mis à jour avec succès');
+      } else {
+        // Send a POST request to add a new user
+        const response = await axios.post('http://localhost:8088/api/utilisateurs/create', {
+          nom_utilisateur: values.name,
+          address_email: values.email,
+          mot_passe: values.password,
+          role: values.role,
+        });
+        
+        // Add the new user locally
+        const newUser = {
+          ...values,
+          key: response.data.id, // Assuming the backend returns the ID of the new user
+        };
+        setUsers([...users, newUser]);
+        message.success('Utilisateur ajouté avec succès');
+      }
+      form.resetFields();
+      setEditingUser(null);
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('There was an error adding/updating the user!', error);
+      message.error('Erreur lors de l\'ajout/mise à jour de l\'utilisateur');
     }
-    form.resetFields();
-    setEditingUser(null);
-    setIsModalVisible(false);
   };
 
   const handleEdit = (record) => {
@@ -38,8 +83,31 @@ const Utilisateur = () => {
   };
 
   const handleDelete = (key) => {
-    setUsers(users.filter((user) => user.key !== key));
-    message.success('Utilisateur supprimé avec succès');
+    Modal.confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer cet utilisateur?',
+      content: 'Cette action est irréversible.',
+      okText: 'Supprimer',
+      okType: 'danger',
+      cancelText: 'Annuler',
+      onOk: async () => {
+        try {
+          // Send a DELETE request to the API
+          await axios.delete(`http://localhost:8088/api/utilisateurs/${key}`);
+
+          // Update the local state to remove the deleted user
+          const updatedUsers = users.filter((user) => user.key !== key);
+          setUsers(updatedUsers);
+
+          message.success('Utilisateur supprimé avec succès');
+        } catch (error) {
+          console.error('There was an error deleting the user!', error);
+          message.error('Erreur lors de la suppression de l\'utilisateur');
+        }
+      },
+      onCancel() {
+        // Optionally handle cancellation here
+      },
+    });
   };
 
   const handleSearch = (e) => {
@@ -61,6 +129,14 @@ const Utilisateur = () => {
       title: 'Rôle',
       dataIndex: 'role',
       key: 'role',
+      render: (role) => {
+        const roleNames = {
+          admin: 'Gestionnaire',
+          user: 'Expert',
+          guest: 'Coordinatrice',
+        };
+        return roleNames[role];
+      }
     },
     {
       title: 'Actions',
@@ -95,9 +171,9 @@ const Utilisateur = () => {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchText.toLowerCase())
+    (user.name && user.name.toLowerCase().includes(searchText.toLowerCase())) ||
+    (user.email && user.email.toLowerCase().includes(searchText.toLowerCase())) ||
+    (user.role && user.role.toLowerCase().includes(searchText.toLowerCase()))
   );
 
   return (
