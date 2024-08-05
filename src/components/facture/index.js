@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { Form, Input, DatePicker, InputNumber, Button, Space, Table, Modal, message } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, DatePicker, InputNumber, Button, Space, Table, Modal, message, Select } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined, MailOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import moment from 'moment';
 
 const { TextArea } = Input;
+const { Option } = Select;
 
 const Facture = () => {
   const [form] = Form.useForm();
@@ -10,22 +13,60 @@ const Facture = () => {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [dossiers, setDossiers] = useState([]);
+
+  useEffect(() => {
+    // Charger les dossiers et les factures
+    axios.get('http://localhost:8088/api/dossiers/getall')
+      .then(response => {
+        setDossiers(response.data);
+      })
+      .catch(error => {
+        message.error('Erreur lors de la récupération des dossiers');
+      });
+
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = () => {
+    axios.get('http://localhost:8088/api/factures/getall')
+      .then(response => {
+        setInvoices(response.data);
+      })
+      .catch(error => {
+        message.error('Erreur lors de la récupération des factures');
+      });
+  };
 
   const handleAddEditInvoice = (values) => {
+    const requestData = {
+      numero_facture: values.invoice_number,
+      date_facture: values.invoice_date.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+      montant_facture: values.invoice_amount,
+      description: values.invoice_description,
+      dossier: values.dossier_id,
+    };
+
     if (editingInvoice) {
-      const updatedInvoices = invoices.map((invoice) =>
-        invoice.key === editingInvoice.key ? { ...values, key: editingInvoice.key } : invoice
-      );
-      setInvoices(updatedInvoices);
-      message.success('Facture mise à jour avec succès');
+      axios.put(`http://localhost:8088/api/factures/${editingInvoice.id}`, requestData)
+        .then(() => {
+          message.success('Facture mise à jour avec succès');
+          fetchInvoices();
+        })
+        .catch(error => {
+          message.error(`Erreur lors de la mise à jour de la facture: ${error.response ? error.response.data : error.message}`);
+        });
     } else {
-      const newInvoice = {
-        ...values,
-        key: Date.now(),
-      };
-      setInvoices([...invoices, newInvoice]);
-      message.success('Facture ajoutée avec succès');
+      axios.post('http://localhost:8088/api/factures/create', requestData)
+        .then(() => {
+          message.success('Facture ajoutée avec succès');
+          fetchInvoices();
+        })
+        .catch(error => {
+          message.error(`Erreur lors de la création de la facture: ${error.response ? error.response.data : error.message}`);
+        });
     }
+
     form.resetFields();
     setEditingInvoice(null);
     setIsModalVisible(false);
@@ -33,13 +74,44 @@ const Facture = () => {
 
   const handleEdit = (record) => {
     setEditingInvoice(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      invoice_number: record.numero_facture,
+      invoice_date: moment(record.date_facture),
+      invoice_amount: record.montant_facture,
+      invoice_description: record.description,
+      dossier_id: record.dossier,
+    });
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key) => {
-    setInvoices(invoices.filter((invoice) => invoice.key !== key));
-    message.success('Facture supprimée avec succès');
+  const handleDelete = (id) => {
+    Modal.confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer cette facture ?',
+      content: 'Cette action est irréversible.',
+      okText: 'Supprimer',
+      okType: 'danger',
+      cancelText: 'Annuler',
+      onOk() {
+        axios.delete(`http://localhost:8088/api/factures/${id}`)
+          .then(() => {
+            message.success('Facture supprimée avec succès');
+            fetchInvoices();
+          })
+          .catch(error => {
+            message.error(`Erreur lors de la suppression de la facture: ${error.response ? error.response.data : error.message}`);
+          });
+      },
+    });
+  };
+
+  const handleSend = (id) => {
+    axios.post(`http://localhost:8088/api/factures/send/${id}`)
+      .then(() => {
+        message.success('Facture envoyée avec succès');
+      })
+      .catch(error => {
+        message.error(`Erreur lors de l'envoi de la facture: ${error.response ? error.response.data : error.message}`);
+      });
   };
 
   const handleSearch = (e) => {
@@ -49,25 +121,34 @@ const Facture = () => {
   const columns = [
     {
       title: 'Numéro de facture',
-      dataIndex: 'invoice_number',
-      key: 'invoice_number',
+      dataIndex: 'numero_facture',
+      key: 'numero_facture',
     },
     {
       title: 'Date de facture',
-      dataIndex: 'invoice_date',
-      key: 'invoice_date',
-      render: (text) => text.format('DD/MM/YYYY'),
+      dataIndex: 'date_facture',
+      key: 'date_facture',
+      render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Montant de facture',
-      dataIndex: 'invoice_amount',
-      key: 'invoice_amount',
+      dataIndex: 'montant_facture',
+      key: 'montant_facture',
       render: (amount) => `${amount} €`,
     },
     {
       title: 'Description',
-      dataIndex: 'invoice_description',
-      key: 'invoice_description',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Numéro de dossier',
+      dataIndex: 'dossier',
+      key: 'dossier',
+      render: (dossierId) => {
+        const dossier = dossiers.find(d => d.id === dossierId);
+        return dossier ? dossier.numero_dossier : 'Inconnu';
+      },
     },
     {
       title: 'Actions',
@@ -76,7 +157,8 @@ const Facture = () => {
         <Space>
           <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
+          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
+          <Button icon={<MailOutlined />} onClick={() => handleSend(record.id)} />
         </Space>
       ),
     },
@@ -84,12 +166,13 @@ const Facture = () => {
 
   const handleView = (record) => {
     Modal.info({
-      title: `Facture: ${record.invoice_number}`,
+      title: `Facture: ${record.numero_facture}`,
       content: (
         <div>
-          <p>Date: {record.invoice_date.format('DD/MM/YYYY')}</p>
-          <p>Montant: {record.invoice_amount} €</p>
-          <p>Description: {record.invoice_description}</p>
+          <p>Date: {moment(record.date_facture).format('DD/MM/YYYY')}</p>
+          <p>Montant: {record.montant_facture} €</p>
+          <p>Description: {record.description}</p>
+          <p>Dossier: {dossiers.find(dossier => dossier.id === record.dossier)?.numero_dossier || 'Inconnu'}</p>
         </div>
       ),
       onOk() {},
@@ -103,7 +186,7 @@ const Facture = () => {
   };
 
   const filteredInvoices = invoices.filter((invoice) =>
-    invoice.invoice_number.toLowerCase().includes(searchText.toLowerCase())
+    invoice.numero_facture.toString().includes(searchText)
   );
 
   return (
@@ -123,7 +206,7 @@ const Facture = () => {
           onChange={handleSearch}
         />
       </Space>
-      <Table columns={columns} dataSource={filteredInvoices} />
+      <Table columns={columns} dataSource={filteredInvoices} rowKey="id" />
       <Modal
         title={editingInvoice ? 'Modifier la facture' : 'Ajouter une facture'}
         visible={isModalVisible}
@@ -164,6 +247,27 @@ const Facture = () => {
             rules={[{ required: true, message: 'Veuillez entrer la description de la facture!' }]}
           >
             <TextArea rows={4} />
+          </Form.Item>
+          <Form.Item
+            label="Dossier"
+            name="dossier_id"
+            rules={[{ required: true, message: 'Veuillez sélectionner un dossier!' }]}
+          >
+            <Select
+              showSearch
+              style={{ width: '100%', maxHeight: '150px', overflow: 'auto' }}
+              placeholder="Sélectionner un dossier"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {dossiers.map(dossier => (
+                <Option key={dossier.id} value={dossier.id}>
+                  {dossier.numero_dossier}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item>
             <Space>
