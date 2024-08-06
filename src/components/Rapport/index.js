@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import moment from 'moment';
 
 const { Option } = Select;
 
@@ -15,7 +16,6 @@ const Rapport = () => {
   const [searchTextDossiers, setSearchTextDossiers] = useState('');
 
   useEffect(() => {
-    // Récupérer les dossiers
     axios.get('http://localhost:8088/api/dossiers/getall')
       .then(response => {
         const dossiersWithKey = response.data.map(dossier => ({
@@ -49,7 +49,11 @@ const Rapport = () => {
 
   const handleEdit = (record) => {
     setEditingRapport(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      rapport_date: record.rapport_date && moment(record.rapport_date),
+      dossier: { value: record.dossier },
+    });
     setIsModalVisible(true);
   };
 
@@ -71,7 +75,7 @@ const Rapport = () => {
       title: 'Date de rapport',
       dataIndex: 'rapport_date',
       key: 'rapport_date',
-      render: (text) => text.format('DD/MM/YYYY'),
+      render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Résultats diagnostic',
@@ -118,7 +122,7 @@ const Rapport = () => {
 
   const handleView = (record) => {
     Modal.info({
-      title: `Rapport: ${record.rapport_date.format('DD/MM/YYYY')}`,
+      title: `Rapport: ${moment(record.rapport_date).format('DD/MM/YYYY')}`,
       content: (
         <div>
           <p>Résultats diagnostic: {record.diagnostic_result}</p>
@@ -140,7 +144,7 @@ const Rapport = () => {
   };
 
   const filteredRapports = rapports.filter((rapport) =>
-    rapport.rapport_date.format('DD/MM/YYYY').toLowerCase().includes(searchText.toLowerCase())
+    moment(rapport.rapport_date).format('DD/MM/YYYY').toLowerCase().includes(searchText.toLowerCase())
   );
 
   const filteredDossiers = dossiers.filter((dossier) =>
@@ -180,15 +184,11 @@ const Rapport = () => {
     container: {
       padding: '24px',
       display: 'flex',
+      flexDirection: 'column',
       height: '100vh',
     },
-    rapportSection: {
-      flex: 1,
-      paddingRight: '12px',
-    },
-    dossierSection: {
-      flex: 1,
-      paddingLeft: '12px',
+    section: {
+      marginBottom: '24px',
     },
     tableWrapper: {
       backgroundColor: '#fff',
@@ -215,7 +215,22 @@ const Rapport = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.rapportSection}>
+      <div style={styles.section}>
+        <div style={styles.tableWrapper}>
+          <h2 style={styles.tableTitle}>Liste des Dossiers</h2>
+          <div style={styles.searchBar}>
+            <Input
+              placeholder="Rechercher un dossier"
+              prefix={<SearchOutlined />}
+              value={searchTextDossiers}
+              onChange={handleSearchDossiers}
+              style={styles.input}
+            />
+          </div>
+          <Table columns={columnsDossiers} dataSource={filteredDossiers} pagination={false} />
+        </div>
+      </div>
+      <div style={styles.section}>
         <Space style={{ marginBottom: 16 }}>
           <Button
             type="primary"
@@ -292,39 +307,24 @@ const Rapport = () => {
               name="dossier"
               rules={[{ required: true, message: 'Veuillez sélectionner un dossier!' }]}
             >
-              <Select placeholder="Sélectionner un dossier">
-                {dossiers.map(dossier => (
-                  <Option key={dossier.key} value={dossier.name}>{dossier.name}</Option>
+              <Select>
+                {dossiers.map((dossier) => (
+                  <Option key={dossier.id} value={dossier.numero_dossier}>
+                    {dossier.numero_dossier}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
             <Form.Item>
-              <Space>
-                <Button type="primary" htmlType="submit">
-                  {editingRapport ? 'Mettre à jour' : 'Ajouter'}
-                </Button>
-                <Button type="default" onClick={handleCancel}>
-                  Annuler
-                </Button>
-              </Space>
+              <Button type="primary" htmlType="submit">
+                {editingRapport ? 'Modifier' : 'Ajouter'}
+              </Button>
+              <Button onClick={handleCancel} style={{ marginLeft: '8px' }}>
+                Annuler
+              </Button>
             </Form.Item>
           </Form>
         </Modal>
-      </div>
-      <div style={styles.dossierSection}>
-        <div style={styles.tableWrapper}>
-          <div style={styles.tableTitle}>Liste des Dossiers</div>
-          <div style={styles.searchBar}>
-            <Input
-              placeholder="Rechercher un dossier"
-              prefix={<SearchOutlined />}
-              value={searchTextDossiers}
-              onChange={handleSearchDossiers}
-              style={styles.input}
-            />
-          </div>
-          <Table columns={columnsDossiers} dataSource={filteredDossiers} />
-        </div>
       </div>
     </div>
   );
