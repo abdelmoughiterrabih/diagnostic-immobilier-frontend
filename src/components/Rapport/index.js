@@ -16,51 +16,30 @@ const Rapport = () => {
   const [searchTextDossiers, setSearchTextDossiers] = useState('');
 
   useEffect(() => {
+    // Fetch rapports data
+    axios.get('http://localhost:8088/api/rapports/getall')
+      .then(response => {
+        const fetchedRapports = response.data.map(rapport => ({
+          ...rapport,
+          key: rapport.id
+        }));
+        setRapports(fetchedRapports);
+      })
+      .catch(error => {
+        console.error('Erreur lors de la récupération des rapports:', error);
+        message.error('Erreur lors de la récupération des rapports');
+      });
+
+    // Fetch dossiers data
     axios.get('http://localhost:8088/api/dossiers/getall')
       .then(response => {
-        const dossiersWithKey = response.data.map(dossier => ({
-          ...dossier,
-          key: dossier.id,
-        }));
-        setDossiers(dossiersWithKey);
+        setDossiers(response.data);
       })
-      .catch(error => console.error('Erreur lors de la récupération des dossiers:', error));
+      .catch(error => {
+        console.error('Erreur lors de la récupération des dossiers:', error);
+        message.error('Erreur lors de la récupération des dossiers');
+      });
   }, []);
-
-  const handleAddEditRapport = (values) => {
-    if (editingRapport) {
-      const updatedRapports = rapports.map((rapport) =>
-        rapport.key === editingRapport.key ? { ...values, key: editingRapport.key } : rapport
-      );
-      setRapports(updatedRapports);
-      message.success('Rapport mis à jour avec succès');
-    } else {
-      const newRapport = {
-        ...values,
-        key: Date.now(),
-      };
-      setRapports([...rapports, newRapport]);
-      message.success('Rapport ajouté avec succès');
-    }
-    form.resetFields();
-    setEditingRapport(null);
-    setIsModalVisible(false);
-  };
-
-  const handleEdit = (record) => {
-    setEditingRapport(record);
-    form.setFieldsValue({
-      ...record,
-      rapport_date: record.rapport_date && moment(record.rapport_date),
-      dossier: { value: record.dossier },
-    });
-    setIsModalVisible(true);
-  };
-
-  const handleDelete = (key) => {
-    setRapports(rapports.filter((rapport) => rapport.key !== key));
-    message.success('Rapport supprimé avec succès');
-  };
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -70,71 +49,23 @@ const Rapport = () => {
     setSearchTextDossiers(e.target.value);
   };
 
-  const columnsRapports = [
-    {
-      title: 'Date de rapport',
-      dataIndex: 'rapport_date',
-      key: 'rapport_date',
-      render: (text) => moment(text).format('DD/MM/YYYY'),
-    },
-    {
-      title: 'Résultats diagnostic',
-      dataIndex: 'diagnostic_result',
-      key: 'diagnostic_result',
-    },
-    {
-      title: 'Estimation prix',
-      dataIndex: 'price_estimation',
-      key: 'price_estimation',
-    },
-    {
-      title: 'Adresse de bien',
-      dataIndex: 'property_address',
-      key: 'property_address',
-    },
-    {
-      title: 'Type de bien',
-      dataIndex: 'property_type',
-      key: 'property_type',
-    },
-    {
-      title: 'Description de bien',
-      dataIndex: 'property_description',
-      key: 'property_description',
-    },
-    {
-      title: 'Dossier',
-      dataIndex: 'dossier',
-      key: 'dossier',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (text, record) => (
-        <Space>
-          <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)} />
-        </Space>
-      ),
-    },
-  ];
+  const handleAddRapport = (values) => {
+    const newRapport = {
+      ...values,
+      rapport_date: values.rapport_date.toISOString(), // Format date to ISO 8601
+      dossier: values.dossier, // Send only the dossier ID
+    };
 
-  const handleView = (record) => {
-    Modal.info({
-      title: `Rapport: ${moment(record.rapport_date).format('DD/MM/YYYY')}`,
-      content: (
-        <div>
-          <p>Résultats diagnostic: {record.diagnostic_result}</p>
-          <p>Estimation prix: {record.price_estimation}</p>
-          <p>Adresse de bien: {record.property_address}</p>
-          <p>Type de bien: {record.property_type}</p>
-          <p>Description de bien: {record.property_description}</p>
-          <p>Dossier: {record.dossier}</p>
-        </div>
-      ),
-      onOk() {},
-    });
+    axios.post('http://localhost:8088/api/rapports/create', newRapport)
+      .then(response => {
+        setRapports([...rapports, { ...response.data, key: response.data.id }]);
+        message.success('Rapport ajouté avec succès!');
+        handleCancel();
+      })
+      .catch(error => {
+        console.error('Erreur lors de l\'ajout du rapport:', error);
+        message.error('Erreur lors de l\'ajout du rapport');
+      });
   };
 
   const handleCancel = () => {
@@ -151,32 +82,54 @@ const Rapport = () => {
     dossier.numero_dossier.toString().toLowerCase().includes(searchTextDossiers.toLowerCase())
   );
 
-  const columnsDossiers = [
+  const columnsRapports = [
     {
-      title: 'Numéro de dossier',
-      dataIndex: 'numero_dossier',
-      key: 'numero_dossier',
+      title: 'Date de rapport',
+      dataIndex: 'rapport_date',
+      key: 'rapport_date',
+      render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
-      title: 'Nom de dossier',
-      dataIndex: 'nom',
-      key: 'nom',
+      title: 'Résultats diagnostic',
+      dataIndex: 'resultat_diagnostic',
+      key: 'resultat_diagnostic',
     },
     {
-      title: 'Date de dépôt',
-      dataIndex: 'date_depo',
-      key: 'date_depo',
-      render: (text) => new Date(text).toLocaleDateString(),
+      title: 'Estimation prix',
+      dataIndex: 'estimation_prix',
+      key: 'estimation_prix',
     },
     {
-      title: 'Type de service',
-      dataIndex: 'type_service',
-      key: 'type_service',
+      title: 'Adresse de bien',
+      dataIndex: 'addresse_bien',
+      key: 'addresse_bien',
     },
     {
-      title: 'Client',
-      dataIndex: ['client', 'cin'],
-      key: 'client',
+      title: 'Type de bien',
+      dataIndex: 'type_bien',
+      key: 'type_bien',
+    },
+    {
+      title: 'Description de bien',
+      dataIndex: 'description_bien',
+      key: 'description_bien',
+    },
+    {
+      title: 'Dossier',
+      dataIndex: 'dossier',
+      key: 'dossier',
+      render: (dossier) => dossier.numero_dossier,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text, record) => (
+        <Space>
+          <Button icon={<EyeOutlined />} />
+          <Button icon={<EditOutlined />} />
+          <Button icon={<DeleteOutlined />} />
+        </Space>
+      ),
     },
   ];
 
@@ -216,21 +169,6 @@ const Rapport = () => {
   return (
     <div style={styles.container}>
       <div style={styles.section}>
-        <div style={styles.tableWrapper}>
-          <h2 style={styles.tableTitle}>Liste des Dossiers</h2>
-          <div style={styles.searchBar}>
-            <Input
-              placeholder="Rechercher un dossier"
-              prefix={<SearchOutlined />}
-              value={searchTextDossiers}
-              onChange={handleSearchDossiers}
-              style={styles.input}
-            />
-          </div>
-          <Table columns={columnsDossiers} dataSource={filteredDossiers} pagination={false} />
-        </div>
-      </div>
-      <div style={styles.section}>
         <Space style={{ marginBottom: 16 }}>
           <Button
             type="primary"
@@ -256,7 +194,7 @@ const Rapport = () => {
           <Form
             form={form}
             name="rapport_form"
-            onFinish={handleAddEditRapport}
+            onFinish={handleAddRapport}
             layout="vertical"
             autoComplete="off"
           >
@@ -269,35 +207,35 @@ const Rapport = () => {
             </Form.Item>
             <Form.Item
               label="Résultats diagnostic"
-              name="diagnostic_result"
+              name="resultat_diagnostic"
               rules={[{ required: true, message: 'Veuillez entrer les résultats du diagnostic!' }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Estimation prix"
-              name="price_estimation"
+              name="estimation_prix"
               rules={[{ required: true, message: 'Veuillez entrer l\'estimation du prix!' }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Adresse de bien"
-              name="property_address"
+              name="addresse_bien"
               rules={[{ required: true, message: 'Veuillez entrer l\'adresse de bien!' }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Type de bien"
-              name="property_type"
+              name="type_bien"
               rules={[{ required: true, message: 'Veuillez entrer le type de bien!' }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               label="Description de bien"
-              name="property_description"
+              name="description_bien"
               rules={[{ required: true, message: 'Veuillez entrer la description de bien!' }]}
             >
               <Input />
@@ -309,7 +247,7 @@ const Rapport = () => {
             >
               <Select>
                 {dossiers.map((dossier) => (
-                  <Option key={dossier.id} value={dossier.numero_dossier}>
+                  <Option key={dossier.id} value={dossier.id}>
                     {dossier.numero_dossier}
                   </Option>
                 ))}
