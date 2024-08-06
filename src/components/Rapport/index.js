@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const { Option } = Select;
 
 const Rapport = () => {
   const [form] = Form.useForm();
   const [rapports, setRapports] = useState([]);
-  const [dossiers, setDossiers] = useState([
-    { key: 1, name: 'Dossier 1' },
-    { key: 2, name: 'Dossier 2' },
-    { key: 3, name: 'Dossier 3' },
-    { key: 4, name: 'Dossier 4' },
-    { key: 5, name: 'Dossier 5' },
-    { key: 6, name: 'Dossier 6' },
-    { key: 7, name: 'Dossier 7' },
-    { key: 8, name: 'Dossier 8' },
-    { key: 9, name: 'Dossier 9' },
-    { key: 10, name: 'Dossier 10' },
-    // Ajoutez autant de dossiers que nécessaire
-  ]);
+  const [dossiers, setDossiers] = useState([]);
   const [editingRapport, setEditingRapport] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [searchTextDossiers, setSearchTextDossiers] = useState('');
+
+  useEffect(() => {
+    // Récupérer les dossiers
+    axios.get('http://localhost:8088/api/dossiers/getall')
+      .then(response => {
+        const dossiersWithKey = response.data.map(dossier => ({
+          ...dossier,
+          key: dossier.id,
+        }));
+        setDossiers(dossiersWithKey);
+      })
+      .catch(error => console.error('Erreur lors de la récupération des dossiers:', error));
+  }, []);
 
   const handleAddEditRapport = (values) => {
     if (editingRapport) {
@@ -59,7 +62,11 @@ const Rapport = () => {
     setSearchText(e.target.value);
   };
 
-  const columns = [
+  const handleSearchDossiers = (e) => {
+    setSearchTextDossiers(e.target.value);
+  };
+
+  const columnsRapports = [
     {
       title: 'Date de rapport',
       dataIndex: 'rapport_date',
@@ -136,102 +143,189 @@ const Rapport = () => {
     rapport.rapport_date.format('DD/MM/YYYY').toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const filteredDossiers = dossiers.filter((dossier) =>
+    dossier.numero_dossier.toString().toLowerCase().includes(searchTextDossiers.toLowerCase())
+  );
+
+  const columnsDossiers = [
+    {
+      title: 'Numéro de dossier',
+      dataIndex: 'numero_dossier',
+      key: 'numero_dossier',
+    },
+    {
+      title: 'Nom de dossier',
+      dataIndex: 'nom',
+      key: 'nom',
+    },
+    {
+      title: 'Date de dépôt',
+      dataIndex: 'date_depo',
+      key: 'date_depo',
+      render: (text) => new Date(text).toLocaleDateString(),
+    },
+    {
+      title: 'Type de service',
+      dataIndex: 'type_service',
+      key: 'type_service',
+    },
+    {
+      title: 'Client',
+      dataIndex: ['client', 'cin'],
+      key: 'client',
+    },
+  ];
+
+  const styles = {
+    container: {
+      padding: '24px',
+      display: 'flex',
+      height: '100vh',
+    },
+    rapportSection: {
+      flex: 1,
+      paddingRight: '12px',
+    },
+    dossierSection: {
+      flex: 1,
+      paddingLeft: '12px',
+    },
+    tableWrapper: {
+      backgroundColor: '#fff',
+      padding: '24px',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    },
+    searchBar: {
+      display: 'flex',
+      justifyContent: 'flex-start',
+      marginBottom: '16px',
+    },
+    input: {
+      width: '300px',
+    },
+    tableTitle: {
+      fontSize: '24px',
+      fontWeight: 'bold',
+      color: '#28a745',
+      textAlign: 'center',
+      marginBottom: '16px',
+    },
+  };
+
   return (
-    <div style={{ padding: 24 }}>
-      <Space style={{ marginBottom: 16 }}>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalVisible(true)}
+    <div style={styles.container}>
+      <div style={styles.rapportSection}>
+        <Space style={{ marginBottom: 16 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+          >
+            Ajouter un rapport
+          </Button>
+          <Input
+            placeholder="Rechercher un rapport"
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={handleSearch}
+          />
+        </Space>
+        <Table columns={columnsRapports} dataSource={filteredRapports} />
+        <Modal
+          title={editingRapport ? 'Modifier le rapport' : 'Ajouter un rapport'}
+          visible={isModalVisible}
+          onCancel={handleCancel}
+          footer={null}
         >
-          Ajouter un rapport
-        </Button>
-        <Input
-          placeholder="Rechercher un rapport"
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={handleSearch}
-        />
-      </Space>
-      <Table columns={columns} dataSource={filteredRapports} />
-      <Modal
-        title={editingRapport ? 'Modifier le rapport' : 'Ajouter un rapport'}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form
-          form={form}
-          name="rapport_form"
-          onFinish={handleAddEditRapport}
-          layout="vertical"
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Date de rapport"
-            name="rapport_date"
-            rules={[{ required: true, message: 'Veuillez entrer la date de rapport!' }]}
+          <Form
+            form={form}
+            name="rapport_form"
+            onFinish={handleAddEditRapport}
+            layout="vertical"
+            autoComplete="off"
           >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item
-            label="Résultats diagnostic"
-            name="diagnostic_result"
-            rules={[{ required: true, message: 'Veuillez entrer les résultats du diagnostic!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Estimation prix"
-            name="price_estimation"
-            rules={[{ required: true, message: 'Veuillez entrer l\'estimation du prix!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Adresse de bien"
-            name="property_address"
-            rules={[{ required: true, message: 'Veuillez entrer l\'adresse de bien!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Type de bien"
-            name="property_type"
-            rules={[{ required: true, message: 'Veuillez entrer le type de bien!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Description de bien"
-            name="property_description"
-            rules={[{ required: true, message: 'Veuillez entrer la description de bien!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Dossier"
-            name="dossier"
-            rules={[{ required: true, message: 'Veuillez sélectionner un dossier!' }]}
-          >
-            <Select placeholder="Sélectionner un dossier">
-              {dossiers.map(dossier => (
-                <Option key={dossier.key} value={dossier.name}>{dossier.name}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                {editingRapport ? 'Mettre à jour' : 'Ajouter'}
-              </Button>
-              <Button type="default" onClick={handleCancel}>
-                Annuler
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Form.Item
+              label="Date de rapport"
+              name="rapport_date"
+              rules={[{ required: true, message: 'Veuillez entrer la date de rapport!' }]}
+            >
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
+              label="Résultats diagnostic"
+              name="diagnostic_result"
+              rules={[{ required: true, message: 'Veuillez entrer les résultats du diagnostic!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Estimation prix"
+              name="price_estimation"
+              rules={[{ required: true, message: 'Veuillez entrer l\'estimation du prix!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Adresse de bien"
+              name="property_address"
+              rules={[{ required: true, message: 'Veuillez entrer l\'adresse de bien!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Type de bien"
+              name="property_type"
+              rules={[{ required: true, message: 'Veuillez entrer le type de bien!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Description de bien"
+              name="property_description"
+              rules={[{ required: true, message: 'Veuillez entrer la description de bien!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Dossier"
+              name="dossier"
+              rules={[{ required: true, message: 'Veuillez sélectionner un dossier!' }]}
+            >
+              <Select placeholder="Sélectionner un dossier">
+                {dossiers.map(dossier => (
+                  <Option key={dossier.key} value={dossier.name}>{dossier.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  {editingRapport ? 'Mettre à jour' : 'Ajouter'}
+                </Button>
+                <Button type="default" onClick={handleCancel}>
+                  Annuler
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+      <div style={styles.dossierSection}>
+        <div style={styles.tableWrapper}>
+          <div style={styles.tableTitle}>Liste des Dossiers</div>
+          <div style={styles.searchBar}>
+            <Input
+              placeholder="Rechercher un dossier"
+              prefix={<SearchOutlined />}
+              value={searchTextDossiers}
+              onChange={handleSearchDossiers}
+              style={styles.input}
+            />
+          </div>
+          <Table columns={columnsDossiers} dataSource={filteredDossiers} />
+        </div>
+      </div>
     </div>
   );
 };
