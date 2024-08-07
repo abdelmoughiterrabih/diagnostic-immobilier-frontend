@@ -5,6 +5,7 @@ import axios from 'axios';
 import moment from 'moment';
 
 const { Option } = Select;
+const { TextArea } = Input;
 
 const Rapport = () => {
   const [form] = Form.useForm();
@@ -16,7 +17,11 @@ const Rapport = () => {
   const [searchTextDossiers, setSearchTextDossiers] = useState('');
 
   useEffect(() => {
-    // Fetch rapports data
+    fetchRapports();
+    fetchDossiers();
+  }, []);
+
+  const fetchRapports = () => {
     axios.get('http://localhost:8088/api/rapports/getall')
       .then(response => {
         const fetchedRapports = response.data.map(rapport => ({
@@ -29,8 +34,9 @@ const Rapport = () => {
         console.error('Erreur lors de la récupération des rapports:', error);
         message.error('Erreur lors de la récupération des rapports');
       });
+  };
 
-    // Fetch dossiers data
+  const fetchDossiers = () => {
     axios.get('http://localhost:8088/api/dossiers/getall')
       .then(response => {
         setDossiers(response.data);
@@ -39,7 +45,7 @@ const Rapport = () => {
         console.error('Erreur lors de la récupération des dossiers:', error);
         message.error('Erreur lors de la récupération des dossiers');
       });
-  }, []);
+  };
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -58,9 +64,9 @@ const Rapport = () => {
 
     axios.post('http://localhost:8088/api/rapports/create', newRapport)
       .then(response => {
-        setRapports([...rapports, { ...response.data, key: response.data.id }]);
         message.success('Rapport ajouté avec succès!');
         handleCancel();
+        fetchRapports(); // Re-fetch rapports to refresh the table
       })
       .catch(error => {
         console.error('Erreur lors de l\'ajout du rapport:', error);
@@ -210,7 +216,7 @@ const Rapport = () => {
               name="resultat_diagnostic"
               rules={[{ required: true, message: 'Veuillez entrer les résultats du diagnostic!' }]}
             >
-              <Input />
+              <TextArea rows={4} />
             </Form.Item>
             <Form.Item
               label="Estimation prix"
@@ -238,7 +244,7 @@ const Rapport = () => {
               name="description_bien"
               rules={[{ required: true, message: 'Veuillez entrer la description de bien!' }]}
             >
-              <Input />
+              <TextArea rows={4} />
             </Form.Item>
             <Form.Item
               label="Dossier"

@@ -4,10 +4,16 @@ import {
   MenuUnfoldOutlined,
   UploadOutlined,
   UserOutlined,
+  DashboardOutlined,
+  FileTextOutlined, // Utilisé pour "Gestion des dossiers"
+  SolutionOutlined,
+  TeamOutlined,
+  DollarOutlined, // Exemple pour "Gestion des factures"
 } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import AppRoutes from '../Routes';
 import { useLocation, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png'; // Chemin relatif à l'image
 
 const { Header, Sider, Content } = Layout;
 
@@ -27,7 +33,6 @@ const AppComponent = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    // Ajoutez la logique de déconnexion ici, par exemple :
     navigate('/login'); // Redirigez vers la page de connexion ou autre
   };
 
@@ -51,33 +56,33 @@ const AppComponent = () => {
           items={[
             {
               key: '/dashboard',
-              icon: <UserOutlined />,
+              icon: <DashboardOutlined />,
               label: 'DashBoard',
             },
             {
               key: '/Dossier',
-              icon: <UploadOutlined />,
-              label: 'Gestion des dossiers',
+              icon: <FileTextOutlined />,
+              label: ' Dossiers',
             },
             {
               key: '/Rapport',
-              icon: <UploadOutlined />,
-              label: 'Gestion des Rapports',
+              icon: <SolutionOutlined />,
+              label: ' Rapports',
             },
             {
               key: '/facture',
-              icon: <UploadOutlined />,
-              label: 'Gestion des Factures',
+              icon: <DollarOutlined />, // Changer ici pour l'icône des factures
+              label: ' Factures',
             },
             {
               key: '/utilisateur',
-              icon: <UploadOutlined />,
-              label: 'Gestion des utilisateurs',
+              icon: <TeamOutlined />,
+              label: ' utilisateurs',
             },
             {
               key: '/client',
-              icon: <UploadOutlined />,
-              label: 'Gestion des clients',
+              icon: <UserOutlined />,
+              label: ' clients',
             },
           ]}
           style={{ backgroundColor: '#00A5CF' }} // Changer la couleur de fond du Menu
@@ -89,10 +94,13 @@ const AppComponent = () => {
             padding: 0,
             background: '#00A5CF', // Changer la couleur de fond du Header
             display: 'flex',
-            justifyContent: 'space-between',
             alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logo} alt="Logo" style={{ height: 64, marginLeft: 16 }} />
+          </div>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -102,6 +110,7 @@ const AppComponent = () => {
               width: 64,
               height: 64,
               color: '#fff', // Assurez-vous que la couleur de l'icône contraste bien
+              marginLeft: 'auto', // Place le bouton de menu repliable à droite
             }}
           />
           <div style={{ flex: 1, textAlign: 'center', color: '#fff', fontSize: '20px' }}>
