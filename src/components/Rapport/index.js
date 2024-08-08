@@ -3,6 +3,7 @@ import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select }
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -58,15 +59,15 @@ const Rapport = () => {
   const handleAddRapport = (values) => {
     const newRapport = {
       ...values,
-      rapport_date: values.rapport_date.toISOString(), // Format date to ISO 8601
-      dossier: values.dossier, // Send only the dossier ID
+      rapport_date: values.rapport_date.toISOString(),
+      dossier: values.dossier,
     };
 
     axios.post('http://localhost:8088/api/rapports/create', newRapport)
       .then(response => {
         message.success('Rapport ajouté avec succès!');
         handleCancel();
-        fetchRapports(); // Re-fetch rapports to refresh the table
+        fetchRapports();
       })
       .catch(error => {
         console.error('Erreur lors de l\'ajout du rapport:', error);
@@ -170,6 +171,10 @@ const Rapport = () => {
       textAlign: 'center',
       marginBottom: '16px',
     },
+    dossierButton: {
+      backgroundColor: '#28a745',
+      color: 'white',
+    },
   };
 
   return (
@@ -189,6 +194,11 @@ const Rapport = () => {
             value={searchText}
             onChange={handleSearch}
           />
+          <Link to="/Dossier/ListeDossier">
+            <Button style={styles.dossierButton}>
+              Liste des dossiers
+            </Button>
+          </Link>
         </Space>
         <Table columns={columnsRapports} dataSource={filteredRapports} />
         <Modal

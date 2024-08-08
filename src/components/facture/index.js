@@ -155,10 +155,26 @@ const Facture = () => {
       key: 'actions',
       render: (text, record) => (
         <Space>
-          <Button icon={<EyeOutlined />} onClick={() => handleView(record)} />
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
-          <Button icon={<MailOutlined />} onClick={() => handleSend(record.id)} />
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record)}
+            style={{ backgroundColor: '#1890ff', color: '#fff' }} // Bleu
+          />
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            style={{ backgroundColor: '#52c41a', color: '#fff' }} // Vert
+          />
+          <Button
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+            style={{ backgroundColor: '#ff4d4f', color: '#fff' }} // Rouge
+          />
+          <Button
+            icon={<MailOutlined />}
+            onClick={() => handleSend(record.id)}
+            style={{ backgroundColor: '#faad14', color: '#fff' }} // Jaune
+          />
         </Space>
       ),
     },
