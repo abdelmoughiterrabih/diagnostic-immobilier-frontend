@@ -1,25 +1,52 @@
 .dashboard-container {
-    padding: 20px;
-  }
-  
-  .time-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  }
-  
-  .time-title {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  .time-icon {
-    font-size: 32px;
-  }
-  
-  .calendar {
-    width: 100%;
-  }
-  
+  padding: 24px;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Utilise toute la hauteur de la fenêtre */
+}
+
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.stats-card {
+  text-align: center;
+  border-radius: 8px;
+}
+
+.stats-card .ant-statistic-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.time-row {
+  margin-bottom: 16px;
+}
+
+.time-card {
+  background: #fff;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.time-icon {
+  color: #1890ff;
+}
+
+.calendar-row {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.calendar-card {
+  background: #fff;
+  text-align: center;
+  border-radius: 8px;
+  width: 100%; /* Prend toute la largeur disponible */
+}
+
+.calendar {
+  width: 100%;
+}
