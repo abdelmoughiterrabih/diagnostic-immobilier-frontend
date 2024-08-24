@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Input, Table } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import axiosInstance from '../../../axiosConfig';
 const ListeDossiers = () => {
   const [dossiers, setDossiers] = useState([]);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     // Récupérer les dossiers
-    axios.get('http://localhost:8088/api/dossiers/getall')
+    axiosInstance.get('/api/dossiers/getall')
       .then(response => {
         const dossiersWithKey = response.data.map(dossier => ({
           ...dossier,
@@ -55,7 +55,21 @@ const ListeDossiers = () => {
       dataIndex: ['client', 'cin'],
       key: 'client',
     },
-    // Suppression de la colonne 'Actions'
+    {
+      title:'nom',
+      dataIndex:['client', 'nom'],
+      key:'nom'   
+     },
+     {
+      title:'prenom',
+      dataIndex:['client', 'prenom'],
+      key:'prenom'   
+     },
+     {
+      title:'numero de telephone',
+      dataIndex:['client', 'numero_tel'],
+      key:'numero_tel'   
+     },
   ];
 
   const styles = {

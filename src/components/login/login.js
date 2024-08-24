@@ -1,19 +1,36 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Layout, Avatar, Typography } from 'antd';
+import { Form, Input, Button, Layout, Avatar, message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './login.css';
 import img from '../../assets/photologin.jpg';
 
 const { Content } = Layout;
 
-const LoginForm = () => {
+const Login= () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (values) => {
-    // Here you can add login logic
-    console.log('Username:', values.username);
-    console.log('Password:', values.password);
+    // Envoyer les données à l'API de connexion
+    axios.post('http://localhost:8088/auth/signin', {
+      email: values.username,
+      password: values.password
+    })
+      .then(response => {
+        // Si la connexion est réussie, redirige vers le tableau de bord
+        const { jwt, role } = response.data;
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('role', role);
+        message.success('Login successful!');
+        navigate('/dashboard');  // Assurez-vous que la route '/dashboard' est définie dans votre application
+      })
+      .catch(error => {
+        // Si la connexion échoue, affiche une alerte d'erreur
+        message.error('Login failed! Please check your credentials.');
+      });
   };
 
   return (
@@ -55,7 +72,7 @@ const LoginForm = () => {
                     size="large"
                   />
                 </Form.Item>
-
+<a href='/signup'>cree votre compte </a>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" block size="large">
                     Login
@@ -77,4 +94,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default Login;

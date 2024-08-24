@@ -33,6 +33,10 @@ const AppComponent = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
+   
+      localStorage.removeItem('token');
+     localStorage.removeItem('role');
+    
     navigate('/login'); // Redirigez vers la page de connexion ou autre
   };
 

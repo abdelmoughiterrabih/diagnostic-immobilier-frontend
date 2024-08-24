@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Space, Table, Modal, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import axiosInstance from '../../axiosConfig';
 const Client = () => {
   const [form] = Form.useForm();
   const [clients, setClients] = useState([]);
@@ -16,7 +16,7 @@ const Client = () => {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get('http://localhost:8088/api/clients/getall');
+      const response = await axiosInstance.get('/api/clients/getall');
       const clientsWithKeys = response.data.map((client) => ({
         ...client,
         key: client.id,
@@ -30,7 +30,7 @@ const Client = () => {
   const handleAddEditClient = async (values) => {
     if (editingClient) {
       try {
-        await axios.put(`http://localhost:8088/api/clients/${editingClient.id}`, values);
+        await axiosInstance.put(`/api/clients/${editingClient.id}`, values);
         const updatedClients = clients.map((client) =>
           client.id === editingClient.id ? { ...values, key: editingClient.key } : client
         );
@@ -41,7 +41,7 @@ const Client = () => {
       }
     } else {
       try {
-        const response = await axios.post('http://localhost:8088/api/clients/create', values);
+        const response = await axiosInstance.post('/api/clients/create', values);
         const newClient = {
           ...response.data,
           key: response.data.id,
@@ -71,7 +71,7 @@ const Client = () => {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await axios.delete(`http://localhost:8088/api/clients/${key}`);
+          await axiosInstance.delete(`/api/clients/${key}`);
           setClients(clients.filter((client) => client.key !== key));
           message.success('Client supprimé avec succès');
         } catch (error) {

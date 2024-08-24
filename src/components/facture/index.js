@@ -3,6 +3,7 @@ import { Form, Input, DatePicker, InputNumber, Button, Space, Table, Modal, mess
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined, MailOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
+import axiosInstance from '../../axiosConfig';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -17,7 +18,7 @@ const Facture = () => {
 
   useEffect(() => {
     // Charger les dossiers et les factures
-    axios.get('http://localhost:8088/api/dossiers/getall')
+    axiosInstance.get('/api/dossiers/getall')
       .then(response => {
         setDossiers(response.data);
       })
@@ -29,7 +30,7 @@ const Facture = () => {
   }, []);
 
   const fetchInvoices = () => {
-    axios.get('http://localhost:8088/api/factures/getall')
+    axiosInstance.get('/api/factures/getall')
       .then(response => {
         setInvoices(response.data);
       })
@@ -48,7 +49,7 @@ const Facture = () => {
     };
 
     if (editingInvoice) {
-      axios.put(`http://localhost:8088/api/factures/${editingInvoice.id}`, requestData)
+      axiosInstance.put(`/api/factures/${editingInvoice.id}`, requestData)
         .then(() => {
           message.success('Facture mise à jour avec succès');
           fetchInvoices();
@@ -57,7 +58,7 @@ const Facture = () => {
           message.error(`Erreur lors de la mise à jour de la facture: ${error.response ? error.response.data : error.message}`);
         });
     } else {
-      axios.post('http://localhost:8088/api/factures/create', requestData)
+      axiosInstance.post('/api/factures/create', requestData)
         .then(() => {
           message.success('Facture ajoutée avec succès');
           fetchInvoices();
@@ -92,7 +93,7 @@ const Facture = () => {
       okType: 'danger',
       cancelText: 'Annuler',
       onOk() {
-        axios.delete(`http://localhost:8088/api/factures/${id}`)
+        axiosInstance.delete(`/api/factures/${id}`)
           .then(() => {
             message.success('Facture supprimée avec succès');
             fetchInvoices();
@@ -105,7 +106,7 @@ const Facture = () => {
   };
 
   const handleSend = (id) => {
-    axios.post(`http://localhost:8088/api/factures/send/${id}`)
+    axiosInstance.post(`/api/factures/send/${id}`)
       .then(() => {
         message.success('Facture envoyée avec succès');
       })

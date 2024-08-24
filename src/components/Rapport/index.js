@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../../axiosConfig';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 
@@ -14,8 +14,8 @@ const Rapport = () => {
   const [dossiers, setDossiers] = useState([]);
   const [editingRapport, setEditingRapport] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [searchTextDossiers, setSearchTextDossiers] = useState('');
 
   useEffect(() => {
     fetchRapports();
@@ -23,7 +23,7 @@ const Rapport = () => {
   }, []);
 
   const fetchRapports = () => {
-    axios.get('http://localhost:8088/api/rapports/getall')
+    axiosInstance.get('/api/rapports/getall')
       .then(response => {
         const fetchedRapports = response.data.map(rapport => ({
           ...rapport,
@@ -38,7 +38,7 @@ const Rapport = () => {
   };
 
   const fetchDossiers = () => {
-    axios.get('http://localhost:8088/api/dossiers/getall')
+    axiosInstance.get('/api/dossiers/getall')
       .then(response => {
         setDossiers(response.data);
       })
@@ -52,18 +52,14 @@ const Rapport = () => {
     setSearchText(e.target.value);
   };
 
-  const handleSearchDossiers = (e) => {
-    setSearchTextDossiers(e.target.value);
-  };
-
   const handleAddRapport = (values) => {
     const newRapport = {
       ...values,
       rapport_date: values.rapport_date.toISOString(),
-      dossier: values.dossier,
+      dossier: values.dossier, // Dossier ID is included in the request
     };
 
-    axios.post('http://localhost:8088/api/rapports/create', newRapport)
+    axiosInstance.post('/api/rapports/create', newRapport)
       .then(response => {
         message.success('Rapport ajouté avec succès!');
         handleCancel();
@@ -75,18 +71,84 @@ const Rapport = () => {
       });
   };
 
+  const handleEditRapport = (rapport) => {
+    // Find the full dossier object by its ID
+    const dossierObject = dossiers.find(dossier => dossier.id === rapport.dossier.id);
+  
+    // Ensure the dossier object is included in the form values for update
+    setEditingRapport(rapport);
+    form.setFieldsValue({
+      ...rapport,
+      rapport_date: moment(rapport.rapport_date),
+      dossier: dossierObject // Set the complete dossier object
+    });
+    setIsModalVisible(true);
+  };
+  
+  const handleUpdateRapport = (values) => {
+    const updatedRapport = {
+      ...values,
+      rapport_date: values.rapport_date.toISOString(),
+      dossier: dossiers.find(dossier => dossier.id === values.dossier) // Ensure full dossier object is included
+    };
+  
+    axiosInstance.put(`/api/rapports/${editingRapport.id}`, updatedRapport)
+      .then(response => {
+        message.success('Rapport mis à jour avec succès!');
+        handleCancel();
+        fetchRapports();
+      })
+      .catch(error => {
+        console.error('Erreur lors de la mise à jour du rapport:', error);
+        message.error('Erreur lors de la mise à jour du rapport');
+      });
+  };
+  
+
+  const handleEditButtonClick = (rapport) => {
+    setEditingRapport(rapport);
+    form.setFieldsValue({
+      ...rapport,
+      rapport_date: moment(rapport.rapport_date),
+      dossier: rapport.dossier.id,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteRapport = (id) => {
+    Modal.confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer ce rapport?',
+      okText: 'Oui',
+      okType: 'danger',
+      cancelText: 'Non',
+      onOk: () => {
+        axiosInstance.delete(`/api/rapports/${id}`)
+          .then(response => {
+            message.success('Rapport supprimé avec succès!');
+            fetchRapports();
+          })
+          .catch(error => {
+            console.error('Erreur lors de la suppression du rapport:', error);
+            message.error('Erreur lors de la suppression du rapport');
+          });
+      }
+    });
+  };
+
+  const handleViewRapport = (rapport) => {
+    setEditingRapport(rapport);
+    setIsViewModalVisible(true);
+  };
+
   const handleCancel = () => {
     form.resetFields();
     setEditingRapport(null);
     setIsModalVisible(false);
+    setIsViewModalVisible(false);
   };
 
   const filteredRapports = rapports.filter((rapport) =>
     moment(rapport.rapport_date).format('DD/MM/YYYY').toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const filteredDossiers = dossiers.filter((dossier) =>
-    dossier.numero_dossier.toString().toLowerCase().includes(searchTextDossiers.toLowerCase())
   );
 
   const columnsRapports = [
@@ -132,54 +194,17 @@ const Rapport = () => {
       key: 'actions',
       render: (text, record) => (
         <Space>
-          <Button icon={<EyeOutlined />} />
-          <Button icon={<EditOutlined />} />
-          <Button icon={<DeleteOutlined />} />
+          <Button icon={<EyeOutlined />} onClick={() => handleViewRapport(record)} />
+          <Button icon={<EditOutlined />} onClick={() => handleEditButtonClick(record)} />
+          <Button icon={<DeleteOutlined />} onClick={() => handleDeleteRapport(record.id)} />
         </Space>
       ),
     },
   ];
 
-  const styles = {
-    container: {
-      padding: '24px',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-    },
-    section: {
-      marginBottom: '24px',
-    },
-    tableWrapper: {
-      backgroundColor: '#fff',
-      padding: '24px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    },
-    searchBar: {
-      display: 'flex',
-      justifyContent: 'flex-start',
-      marginBottom: '16px',
-    },
-    input: {
-      width: '300px',
-    },
-    tableTitle: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      color: '#28a745',
-      textAlign: 'center',
-      marginBottom: '16px',
-    },
-    dossierButton: {
-      backgroundColor: '#28a745',
-      color: 'white',
-    },
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.section}>
+    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <div style={{ marginBottom: '24px' }}>
         <Space style={{ marginBottom: 16 }}>
           <Button
             type="primary"
@@ -195,12 +220,14 @@ const Rapport = () => {
             onChange={handleSearch}
           />
           <Link to="/Dossier/ListeDossier">
-            <Button style={styles.dossierButton}>
+            <Button style={{ backgroundColor: '#28a745', color: 'white' }}>
               Liste des dossiers
             </Button>
           </Link>
         </Space>
         <Table columns={columnsRapports} dataSource={filteredRapports} />
+
+        {/* Add/Edit Modal */}
         <Modal
           title={editingRapport ? 'Modifier le rapport' : 'Ajouter un rapport'}
           visible={isModalVisible}
@@ -210,7 +237,7 @@ const Rapport = () => {
           <Form
             form={form}
             name="rapport_form"
-            onFinish={handleAddRapport}
+            onFinish={editingRapport ? handleUpdateRapport : handleAddRapport}
             layout="vertical"
             autoComplete="off"
           >
@@ -261,27 +288,48 @@ const Rapport = () => {
               name="dossier"
               rules={[{ required: true, message: 'Veuillez sélectionner un dossier!' }]}
             >
-              <Select>
+              <Select disabled={!!editingRapport}>
                 {dossiers.map((dossier) => (
-                  <Option key={dossier.id} value={dossier.id}>
-                    {dossier.numero_dossier}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                {editingRapport ? 'Modifier' : 'Ajouter'}
-              </Button>
-              <Button onClick={handleCancel} style={{ marginLeft: '8px' }}>
-                Annuler
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </div>
-    </div>
-  );
+                 
+                 <Option key={dossier.id} value={dossier.id}>
+                 {dossier.numero_dossier}
+               </Option>
+             ))}
+           </Select>
+         </Form.Item>
+         <Form.Item>
+           <Button type="primary" htmlType="submit" style={{ marginRight: '10px' }}>
+             {editingRapport ? 'Mettre à jour' : 'Ajouter'}
+           </Button>
+           <Button onClick={handleCancel}>
+             Annuler
+           </Button>
+         </Form.Item>
+       </Form>
+     </Modal>
+
+     {/* View Modal */}
+     <Modal
+       title="Détails du rapport"
+       visible={isViewModalVisible}
+       onCancel={handleCancel}
+       footer={null}
+     >
+       {editingRapport && (
+         <div>
+           <p><strong>Date de rapport:</strong> {moment(editingRapport.rapport_date).format('DD/MM/YYYY')}</p>
+           <p><strong>Résultats diagnostic:</strong> {editingRapport.resultat_diagnostic}</p>
+           <p><strong>Estimation prix:</strong> {editingRapport.estimation_prix}</p>
+           <p><strong>Adresse de bien:</strong> {editingRapport.addresse_bien}</p>
+           <p><strong>Type de bien:</strong> {editingRapport.type_bien}</p>
+           <p><strong>Description de bien:</strong> {editingRapport.description_bien}</p>
+           <p><strong>Dossier:</strong> {editingRapport.dossier.numero_dossier}</p>
+         </div>
+       )}
+     </Modal>
+   </div>
+ </div>
+);
 };
 
 export default Rapport;

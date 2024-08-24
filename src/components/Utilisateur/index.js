@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import axiosInstance from '../../axiosConfig';
 
 const { Option } = Select;
 
@@ -16,7 +17,7 @@ const Utilisateur = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8088/api/utilisateurs/getall');
+        const response = await axiosInstance.get('/api/utilisateurs/getall');
         const fetchedUsers = response.data.map(user => ({
           key: user.id,
           name: user.nom_utilisateur,
@@ -37,7 +38,7 @@ const Utilisateur = () => {
     try {
       if (editingUser) {
         // Send a PUT request to update the user
-        await axios.put(`http://localhost:8088/api/utilisateurs/${editingUser.key}`, {
+        await axiosInstance.put(`/api/utilisateurs/${editingUser.key}`, {
           nom_utilisateur: values.name,
           address_email: values.email,
           mot_passe: values.password,
@@ -52,7 +53,7 @@ const Utilisateur = () => {
         message.success('Utilisateur mis à jour avec succès');
       } else {
         // Send a POST request to add a new user
-        const response = await axios.post('http://localhost:8088/api/utilisateurs/create', {
+        const response = await axiosInstance.post('/api/utilisateurs/create', {
           nom_utilisateur: values.name,
           address_email: values.email,
           mot_passe: values.password,
@@ -92,7 +93,7 @@ const Utilisateur = () => {
       onOk: async () => {
         try {
           // Send a DELETE request to the API
-          await axios.delete(`http://localhost:8088/api/utilisateurs/${key}`);
+          await axiosInstance.delete(`/api/utilisateurs/${key}`);
 
           // Update the local state to remove the deleted user
           const updatedUsers = users.filter((user) => user.key !== key);

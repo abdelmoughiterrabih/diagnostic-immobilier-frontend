@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined
 import axios from 'axios';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../axiosConfig';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -20,12 +21,12 @@ const Dossier = () => {
 
   useEffect(() => {
     // Fetch clients
-    axios.get('http://localhost:8088/api/clients/getall')
+    axiosInstance.get('/api/clients/getall')
       .then(response => setClients(response.data))
       .catch(error => console.error('Error fetching clients:', error));
 
     // Fetch dossiers
-    axios.get('http://localhost:8088/api/dossiers/getall')
+    axiosInstance.get('/api/dossiers/getall')
       .then(response => {
         const dossiersWithKey = response.data.map(dossier => ({
           ...dossier,
@@ -44,7 +45,7 @@ const Dossier = () => {
     };
 
     if (editingDossier) {
-      axios.put(`http://localhost:8088/api/dossiers/${editingDossier.key}`, dossierData)
+      axiosInstance.put(`/api/dossiers/${editingDossier.key}`, dossierData)
         .then(() => {
           const updatedDossiers = dossiers.map((dossier) =>
             dossier.key === editingDossier.key ? { ...dossierData, key: editingDossier.key } : dossier
@@ -54,7 +55,7 @@ const Dossier = () => {
         })
         .catch(error => console.error('Error updating dossier:', error));
     } else {
-      axios.post('http://localhost:8088/api/dossiers/create', dossierData)
+      axiosInstance.post('/api/dossiers/create', dossierData)
         .then(response => {
           const newDossier = {
             ...response.data,
@@ -88,7 +89,7 @@ const Dossier = () => {
       okType: 'danger',
       cancelText: 'Non',
       onOk() {
-        axios.delete(`http://localhost:8088/api/dossiers/${key}`)
+        axiosInstance.delete(`/api/dossiers/${key}`)
           .then(() => {
             setDossiers(dossiers.filter((dossier) => dossier.key !== key));
             message.success('Dossier supprimé avec succès');
