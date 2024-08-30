@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Descriptions, Button, Modal, message } from 'antd';
-import axios from 'axios';
 import axiosInstance from '../../../axiosConfig';
 import moment from 'moment';
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+
 const ListeRapport = () => {
   const [rapports, setRapports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRapport, setSelectedRapport] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const navigate = useNavigate(); // Initialiser useNavigate
+
   useEffect(() => {
     const fetchRapports = async () => {
       try {
-        
-        const response = await axiosInstance.get('/api/rapports/getall', {
-        
-        });
-
-        console.log('Données reçues:', response.data); // Vérifier les données reçues
+        const response = await axiosInstance.get('/api/rapports/getall');
+        console.log('Données reçues:', response.data);
 
         if (response.status === 200) {
           setRapports(response.data);
-          console.log(response.data);
           message.success('Données des rapports récupérées avec succès');
         } else {
           message.error('Erreur lors de la récupération des rapports');
@@ -39,42 +37,42 @@ const ListeRapport = () => {
 
   const columns = [
     {
-        title: 'Date de rapport',
-        dataIndex: 'rapport_date',
-        key: 'rapport_date',
-        render: (text) => moment(text).format('DD/MM/YYYY'),
-      },
-      {
-        title: 'Résultats diagnostic',
-        dataIndex: 'resultat_diagnostic',
-        key: 'resultat_diagnostic',
-      },
-      {
-        title: 'Estimation prix',
-        dataIndex: 'estimation_prix',
-        key: 'estimation_prix',
-      },
-      {
-        title: 'Adresse de bien',
-        dataIndex: 'addresse_bien',
-        key: 'addresse_bien',
-      },
-      {
-        title: 'Type de bien',
-        dataIndex: 'type_bien',
-        key: 'type_bien',
-      },
-      {
-        title: 'Description de bien',
-        dataIndex: 'description_bien',
-        key: 'description_bien',
-      },
-      {
-        title: 'Dossier',
-        dataIndex: 'dossier',
-        key: 'dossier',
-        render: (dossier) => dossier.numero_dossier,
-      },
+      title: 'Date de rapport',
+      dataIndex: 'rapport_date',
+      key: 'rapport_date',
+      render: (text) => moment(text).format('DD/MM/YYYY'),
+    },
+    {
+      title: 'Résultats diagnostic',
+      dataIndex: 'resultat_diagnostic',
+      key: 'resultat_diagnostic',
+    },
+    {
+      title: 'Estimation prix',
+      dataIndex: 'estimation_prix',
+      key: 'estimation_prix',
+    },
+    {
+      title: 'Adresse de bien',
+      dataIndex: 'addresse_bien',
+      key: 'addresse_bien',
+    },
+    {
+      title: 'Type de bien',
+      dataIndex: 'type_bien',
+      key: 'type_bien',
+    },
+    {
+      title: 'Description de bien',
+      dataIndex: 'description_bien',
+      key: 'description_bien',
+    },
+    {
+      title: 'Dossier',
+      dataIndex: 'dossier',
+      key: 'dossier',
+      render: (dossier) => dossier.numero_dossier,
+    },
   ];
 
   const showModal = (rapport) => {
@@ -85,6 +83,10 @@ const ListeRapport = () => {
   const handleCancel = () => {
     setModalVisible(false);
     setSelectedRapport(null);
+  };
+
+  const handleBackToFacture = () => {
+    navigate('/facture'); // Redirection vers la page des factures
   };
 
   return (
@@ -111,10 +113,17 @@ const ListeRapport = () => {
               {new Date(selectedRapport.creationDate).toLocaleDateString()}
             </Descriptions.Item>
             <Descriptions.Item label="Statut">{selectedRapport.status}</Descriptions.Item>
-            {/* Ajoutez d'autres champs pertinents ici */}
           </Descriptions>
         )}
       </Modal>
+
+      <Button
+        type="primary"
+        onClick={handleBackToFacture}
+        style={{ backgroundColor: 'green', borderColor: 'green', marginTop: '16px' }}
+      >
+        Retour à Facture
+      </Button>
     </Card>
   );
 };

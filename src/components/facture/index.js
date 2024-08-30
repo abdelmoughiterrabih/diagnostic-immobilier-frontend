@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, InputNumber, Button, Space, Table, Modal, message, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, SearchOutlined, MailOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import moment from 'moment';
 import axiosInstance from '../../axiosConfig';
+import moment from 'moment';
+import { useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -15,6 +15,7 @@ const Facture = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [dossiers, setDossiers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Charger les dossiers et les factures
@@ -119,6 +120,31 @@ const Facture = () => {
     setSearchText(e.target.value);
   };
 
+  const handleView = (record) => {
+    Modal.info({
+      title: `Facture: ${record.numero_facture}`,
+      content: (
+        <div>
+          <p>Date: {moment(record.date_facture).format('DD/MM/YYYY')}</p>
+          <p>Montant: {record.montant_facture} €</p>
+          <p>Description: {record.description}</p>
+          <p>Dossier: {dossiers.find(dossier => dossier.id === record.dossier)?.numero_dossier || 'Inconnu'}</p>
+        </div>
+      ),
+      onOk() {},
+    });
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setEditingInvoice(null);
+    setIsModalVisible(false);
+  };
+
+  const handleRapportNavigation = () => {
+    navigate('/Rapport/ListeRapport');
+  };
+
   const columns = [
     {
       title: 'Numéro de facture',
@@ -135,12 +161,7 @@ const Facture = () => {
       title: 'Montant de facture',
       dataIndex: 'montant_facture',
       key: 'montant_facture',
-      render: (amount) => `${amount} €`,
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      render: (text) => `${text} €`,
     },
     {
       title: 'Numéro de dossier',
@@ -181,27 +202,6 @@ const Facture = () => {
     },
   ];
 
-  const handleView = (record) => {
-    Modal.info({
-      title: `Facture: ${record.numero_facture}`,
-      content: (
-        <div>
-          <p>Date: {moment(record.date_facture).format('DD/MM/YYYY')}</p>
-          <p>Montant: {record.montant_facture} €</p>
-          <p>Description: {record.description}</p>
-          <p>Dossier: {dossiers.find(dossier => dossier.id === record.dossier)?.numero_dossier || 'Inconnu'}</p>
-        </div>
-      ),
-      onOk() {},
-    });
-  };
-
-  const handleCancel = () => {
-    form.resetFields();
-    setEditingInvoice(null);
-    setIsModalVisible(false);
-  };
-
   const filteredInvoices = invoices.filter((invoice) =>
     invoice.numero_facture.toString().includes(searchText)
   );
@@ -222,6 +222,13 @@ const Facture = () => {
           value={searchText}
           onChange={handleSearch}
         />
+        <Button
+          type="default"
+          onClick={handleRapportNavigation}
+          style={{ backgroundColor: '#52c41a', color: '#fff' }} // Bouton vert
+        >
+          Liste des Rapports
+        </Button>
       </Space>
       <Table columns={columns} dataSource={filteredInvoices} rowKey="id" />
       <Modal
@@ -272,11 +279,11 @@ const Facture = () => {
           >
             <Select
               showSearch
-              style={{ width: '100%', maxHeight: '150px', overflow: 'auto' }}
+              style={{ width: '100%' }}
               placeholder="Sélectionner un dossier"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().includes(input.toLowerCase())
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
               {dossiers.map(dossier => (
@@ -291,9 +298,7 @@ const Facture = () => {
               <Button type="primary" htmlType="submit">
                 {editingInvoice ? 'Mettre à jour' : 'Ajouter'}
               </Button>
-              <Button type="default" onClick={handleCancel}>
-                Annuler
-              </Button>
+              <Button onClick={handleCancel}>Annuler</Button>
             </Space>
           </Form.Item>
         </Form>
