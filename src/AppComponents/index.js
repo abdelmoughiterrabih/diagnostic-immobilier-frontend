@@ -24,7 +24,7 @@ const AppComponent = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-
+  const role = localStorage.getItem('role');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const AppComponent = () => {
     
     navigate('/login'); // Redirigez vers la page de connexion ou autre
   };
+
 
   return (
     <Layout style={{ minHeight: '70rem' }}>
@@ -67,26 +68,31 @@ const AppComponent = () => {
               key: '/Dossier',
               icon: <FileTextOutlined />,
               label: ' Dossiers',
+              hidden: !(role.includes("gestionnaire")  || role.includes("admin"))
             },
             {
               key: '/Rapport',
               icon: <SolutionOutlined />,
               label: ' Rapports',
+              hidden: !(role.includes("expert") || role.includes("admin"))
             },
             {
               key: '/facture',
               icon: <DollarOutlined />, // Changer ici pour l'icône des factures
               label: ' Factures',
+              hidden: !(role.includes("coordinateur")  || role.includes("admin"))
             },
             {
               key: '/utilisateur',
               icon: <TeamOutlined />,
               label: ' utilisateurs',
+              hidden: !role.includes("admin")
             },
             {
               key: '/client',
               icon: <UserOutlined />,
               label: ' clients',
+              hidden: !(role.includes("gestionnaire")  || role.includes("admin"))
             },
           ]}
           style={{ backgroundColor: '#00A5CF' }} // Changer la couleur de fond du Menu

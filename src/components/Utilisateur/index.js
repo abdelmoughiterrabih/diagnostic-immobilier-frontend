@@ -260,8 +260,10 @@ const Utilisateur = () => {
           rules={[{ required: true, message: "Please select your role!" }]}
         >
           <Select placeholder="Select your role">
-            <Option value="user">User</Option>
+            <Option value="gestionnaire">Gestionnaire</Option>
             <Option value="admin">Admin</Option>
+            <Option value="expert">Expert</Option>
+            <Option value="coordinateur">Coordinateur</Option>
           </Select>
         </Form.Item>
 
