@@ -135,6 +135,50 @@ const Facture = () => {
     });
   };
 
+  
+
+  const handleSendEmail = (invoiceId) => {
+    // Trouver la facture en fonction de l'ID
+    const invoice = invoices.find((inv) => inv.id === invoiceId);
+    if (!invoice) {
+      message.error('Facture non trouvée');
+      return;
+    }
+  
+    // Récupérer les détails du dossier
+    axiosInstance.get(`/api/dossiers/${invoice.dossier}`)
+      .then((response) => {
+        const dossier = response.data;
+        const clientEmail = dossier.client.address_email;
+        
+        // Construire les données pour l'envoi de l'email
+        const emailData = {
+          email: clientEmail,
+          objet: 'Détails de votre facture',
+          message: 'Bonjour, voici les détails de votre facture :',
+          facture: {
+            numero_facture: invoice.numero_facture,
+            montant_facture: invoice.montant_facture,
+            description: invoice.description,
+            date_facture: invoice.date_facture
+          }
+        };
+  
+        // Envoyer l'email
+        axiosInstance.post('http://localhost:8088/api/send-facture-email', emailData)
+          .then(() => {
+            message.success('Email envoyé avec succès');
+          })
+          .catch((error) => {
+            message.error(`Erreur lors de l'envoi de l'email: ${error.response ? error.response.data : error.message}`);
+          });
+      })
+      .catch((error) => {
+        message.error(`Erreur lors de la récupération des détails du dossier: ${error.response ? error.response.data : error.message}`);
+      });
+  };
+  
+
   const handleCancel = () => {
     form.resetFields();
     setEditingInvoice(null);
@@ -194,7 +238,7 @@ const Facture = () => {
           />
           <Button
             icon={<MailOutlined />}
-            onClick={() => handleSend(record.id)}
+            onClick={() => handleSendEmail(record.id)}
             style={{ backgroundColor: '#faad14', color: '#fff' }} // Jaune
           />
         </Space>

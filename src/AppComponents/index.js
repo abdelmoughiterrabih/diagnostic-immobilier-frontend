@@ -109,9 +109,6 @@ const AppComponent = () => {
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src={logobg} alt="Logo" style={{ height: 64, marginLeft: 16 }} />
-          </div>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -124,6 +121,10 @@ const AppComponent = () => {
               marginLeft: 'auto', // Place le bouton de menu repliable à droite
             }}
           />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logobg} alt="Logo" style={{ height: 64, marginLeft: 16 }} />
+          </div>
+          
           <div style={{ flex: 1, textAlign: 'center', color: '#fff', fontSize: '20px', fontFamily:'monospace'}}>
             Diagnostic Des Immobiliers
           </div>
