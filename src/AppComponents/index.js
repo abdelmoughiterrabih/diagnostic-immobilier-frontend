@@ -14,7 +14,7 @@ import { Button, Layout, Menu, theme } from 'antd';
 import AppRoutes from '../Routes';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png'; // Chemin relatif à l'image
-
+import logobg from'../assets/logobg.png';
 const { Header, Sider, Content } = Layout;
 
 const AppComponent = () => {
@@ -47,7 +47,7 @@ const AppComponent = () => {
         trigger={null} 
         collapsible 
         collapsed={collapsed}
-        style={{ backgroundColor: '#00A5CF' }} // Changer la couleur du Sider
+        style={{ backgroundColor: '#6439FF' }} // Changer la couleur du Sider
       >
         <div className="demo-logo-vertical" />
         <Menu
@@ -82,34 +82,35 @@ const AppComponent = () => {
               label: ' Factures',
               hidden: !(role.includes("coordinateur")  || role.includes("admin"))
             },
-            {
-              key: '/utilisateur',
-              icon: <TeamOutlined />,
-              label: ' utilisateurs',
-              hidden: !role.includes("admin")
-            },
+           
             {
               key: '/client',
               icon: <UserOutlined />,
               label: ' clients',
               hidden: !(role.includes("gestionnaire")  || role.includes("admin"))
             },
+            {
+              key: '/utilisateur',
+              icon: <TeamOutlined />,
+              label: ' utilisateurs',
+              hidden: !role.includes("admin")
+            },
           ]}
-          style={{ backgroundColor: '#00A5CF' }} // Changer la couleur de fond du Menu
+          style={{ backgroundColor: '#6439FF' }} // Changer la couleur de fond du Menu
         />
       </Sider>
       <Layout>
         <Header
           style={{
             padding: 0,
-            background: '#00A5CF', // Changer la couleur de fond du Header
+            background: '#4F75FF', // Changer la couleur de fond du Header
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src={logo} alt="Logo" style={{ height: 64, marginLeft: 16 }} />
+            <img src={logobg} alt="Logo" style={{ height: 64, marginLeft: 16 }} />
           </div>
           <Button
             type="text"
@@ -123,8 +124,8 @@ const AppComponent = () => {
               marginLeft: 'auto', // Place le bouton de menu repliable à droite
             }}
           />
-          <div style={{ flex: 1, textAlign: 'center', color: '#fff', fontSize: '20px' }}>
-            Diagnostic des Immobiliers
+          <div style={{ flex: 1, textAlign: 'center', color: '#fff', fontSize: '20px', fontFamily:'monospace'}}>
+            Diagnostic Des Immobiliers
           </div>
           <Button
             type="primary" // Utilisez le type "primary" pour un bouton avec une couleur de fond définie

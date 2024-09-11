@@ -72,7 +72,7 @@ const Login= () => {
                     size="large"
                   />
                 </Form.Item>
-<a href='/signup'>cree votre compte </a>
+
                 <Form.Item>
                   <Button type="primary" htmlType="submit" block size="large">
                     Login
