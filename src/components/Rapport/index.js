@@ -194,9 +194,9 @@ const Rapport = () => {
       key: 'actions',
       render: (text, record) => (
         <Space>
-          <Button icon={<EyeOutlined />} onClick={() => handleViewRapport(record)} />
-          <Button icon={<EditOutlined />} onClick={() => handleEditButtonClick(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDeleteRapport(record.id)} />
+          <Button style={{ backgroundColor: '#1890ff', color: '#fff' }}  icon={<EyeOutlined />} onClick={() => handleViewRapport(record)} />
+          <Button  style={{ backgroundColor: '#52c41a', color: '#fff' }} className='edit-button' icon={<EditOutlined />} onClick={() => handleEditButtonClick(record)} />
+          <Button style={{ backgroundColor: '#ff4d4f', color: '#fff' }}  className='delete-button' icon={<DeleteOutlined />} onClick={() => handleDeleteRapport(record.id)} />
         </Space>
       ),
     },

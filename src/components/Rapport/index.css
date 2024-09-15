@@ -29,4 +29,15 @@ body {
     border-color: #00A5CF;
     color: #fff;
   }
+  .view-button {
+    color: blue;
+  }
   
+  .edit-button {
+    color: green;
+  }
+  
+  .delete-button {
+    color: red;
+  }
+    

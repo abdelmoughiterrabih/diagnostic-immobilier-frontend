@@ -33,7 +33,7 @@ const VoirDossier = () => {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '24px', margin: '0 auto',minHeight:'35rem' }}>
       <Card
         title={<Title level={2} style={titleStyle}>Dossier {dossier.numero_dossier}</Title>}
         bordered={false}

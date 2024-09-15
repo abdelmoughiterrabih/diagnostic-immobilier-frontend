@@ -129,7 +129,7 @@ const Utilisateur = () => {
 
   const columns = [
     {
-      title: 'Nom',
+      title: 'Nom utilisateur',
       dataIndex: 'name',
       key: 'name',
     },
@@ -175,7 +175,10 @@ const Utilisateur = () => {
       content: (
         <div>
           <p>Adresse Email: {record.email}</p>
+          
+          <p>numero de telephone: +212654325676</p>
           <p>Rôle: {record.role}</p>
+
         </div>
       ),
       onOk() {},

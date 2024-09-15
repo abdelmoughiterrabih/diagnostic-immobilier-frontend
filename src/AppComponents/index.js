@@ -42,7 +42,7 @@ const AppComponent = () => {
 
 
   return (
-    <Layout style={{ minHeight: '70rem' }}>
+    <Layout style={{ }}>
       <Sider 
         trigger={null} 
         collapsible 

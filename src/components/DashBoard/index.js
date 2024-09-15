@@ -48,7 +48,7 @@ fetchData();
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" style={{minHeight: '75rem'}}>
       <Row gutter={16} className="stats-row">
         <Col span={6}>
           <Card className="stats-card" style={{ backgroundColor: '#d3f261' }}>
